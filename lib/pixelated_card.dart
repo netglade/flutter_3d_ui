@@ -16,29 +16,32 @@ class PixelatedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 250,
-      height: 400,
+      width: 270,
+      height: 420,
       child: LayoutBuilder(
         builder: (context, constraints) => FutureBuilder<FragmentShader>(
             future: _loadShader(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final shader = snapshot.data!;
-                shader.setFloat(
-                    0, constraints.maxWidth); // Use constraint width
-                shader.setFloat(
-                    1, constraints.maxHeight); // Use constraint height
+                shader.setFloat(0, constraints.maxWidth);
+                shader.setFloat(1, constraints.maxHeight);
 
-                return AnimatedSampler((image, size, canvas) {
-                  shader.setImageSampler(0, image);
-                  final paint = Paint()..shader = shader;
-                  canvas.drawRect(
-                    Rect.fromLTWH(0, 0, size.width, size.height),
-                    paint,
-                  );
-                },
-                    child:
-                        Align(alignment: Alignment.topLeft, child: AceCard()));
+                return AnimatedSampler(
+                  (image, size, canvas) {
+                    shader.setImageSampler(0, image);
+                    final paint = Paint()..shader = shader;
+                    canvas.drawRect(
+                      Rect.fromLTWH(0, 0, size.width, size.height),
+                      paint,
+                    );
+                  },
+                  child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: AceCard())),
+                );
               } else {
                 return const CircularProgressIndicator();
               }

@@ -1,4 +1,3 @@
-import 'package:balatro_flutter/pixelated_card.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,11 +16,36 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ColoredBox(
+      home: ColoredBox(
         color: Colors.lightBlue,
         child: Center(
-            child:
-                Padding(padding: EdgeInsets.all(16.0), child: PixelatedCard())),
+            child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Container(
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..rotateX(0.3) // tilt on X axis
+                      ..rotateY(-0.4), // tilt on Y axis
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: 200,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            spreadRadius: 0,
+                            blurRadius: 0,
+                            offset: Offset(20, 20),
+                          ),
+                        ],
+                      ),
+                      child: Text('hi'),
+                    ),
+                  ),
+                ))),
       ),
     );
   }
