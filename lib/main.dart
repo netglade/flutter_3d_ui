@@ -1,4 +1,4 @@
-import 'package:balatro_flutter/ace_card.dart';
+import 'package:balatro_flutter/pixelated_card.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
       home: const ColoredBox(
         color: Colors.lightBlue,
         child: Center(
-            child: Padding(padding: EdgeInsets.all(16.0), child: AceCard())),
+            child:
+                Padding(padding: EdgeInsets.all(16.0), child: PixelatedCard())),
       ),
     );
   }
