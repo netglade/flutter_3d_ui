@@ -26,20 +26,31 @@ float sdSphere(vec3 p, float radius) {
     return length(p) - radius;
 }
 
-float sdRoundBox(vec3 p, float width, float height, float elevation, float r, float topR) { 
-    vec3 q = abs(p);
-    vec3 rounding = vec3(r, r, topR);
-    vec3 dimensions = vec3(width, height, elevation);
-    vec3 qi = q - dimensions + rounding;
+float sdRoundBox( vec3 p, vec3 dimensions, float r )
+{
+  vec3 q = abs(p) - dimensions/2 + r;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
+}
 
-    return length(max(qi, 0.0)) + min(max(qi.x, max(qi.y, qi.z)), 0.0) - (q.z > elevation - topR ? topR : r); }
+float sdCappedCylinder( vec3 p, float h, float r )
+{
+  vec2 d = abs(vec2(length(p.xy),p.z)) - vec2(r,h);
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+float sdShape(vec3 p, vec3 dimensions, float sideR, float topR) {
+    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, 0) - vec3(0, 0, topR);
+    vec3 pAfterElongation = p - vec3(clamp(p.x, -adjustedDimensions.x, adjustedDimensions.x), clamp(p.y, -adjustedDimensions.y, adjustedDimensions.y), 0);
+    return sdCappedCylinder(pAfterElongation, adjustedDimensions.z, sideR - topR) - topR;
+}
+
 
 // Scene SDF
 float sceneSDF(vec3 p) {
     // Animate sphere position with time
     // return sdSphere(p , 1.0);
 
-    return sdRoundBox(p, 0.3, 0.3, 0.3, 0.3, 0.3);
+    return sdShape(p, vec3(0.4,0.2,0.2), 0.05, 0.0);
 }
 
 // Calculate normal using central differences
@@ -92,8 +103,8 @@ void main() {
     vec2 uv = FlutterFragCoord().xy / resolution.xy - 0.5;
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.5, 0.5), -1.7);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(uv, 1.0));  // Ray direction
+    vec3 ro = vec3(uv + vec2(0.3, 0.3), -2);  // Ray origin (camera position)
+    vec3 rd = normalize(vec3(-0.2, -0.2, 1.0));  // Ray direction
 
     // Ray march
     float dist = rayMarch(ro, rd);
