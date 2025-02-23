@@ -50,7 +50,6 @@ class RayMarchingProvider extends StatelessWidget {
                 final shader = snapshot.data!;
                 shader.setFloat(0, constraints.maxWidth);
                 shader.setFloat(1, constraints.maxHeight);
-                shader.setFloat(2, shapes.length.toDouble());
 
                 final uniformData = List<double>.filled(
                     shapes.length * ShapeData.stride, 0, growable: false);
@@ -61,7 +60,7 @@ class RayMarchingProvider extends StatelessWidget {
 
                 shader.setFloatUniforms((setter) {
                     setter.setFloats(uniformData);
-                  }, initialIndex: 3);
+                  }, initialIndex: 2);
 
 
                 return AnimatedSampler(

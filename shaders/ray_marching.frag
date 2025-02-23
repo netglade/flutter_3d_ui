@@ -3,11 +3,10 @@
 #include <flutter/runtime_effect.glsl>
 
 const int SHAPE_STRIDE = 10;
-const int MAX_SHAPES = 20;
+const int MAX_SHAPES = 2;
 
 uniform sampler2D uTexture;
 uniform vec2 resolution;
-uniform float shapeCount;
 
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
@@ -17,13 +16,20 @@ struct Shape {
     vec3 sideColor;
 };
 
+const Shape defaultShape = Shape(
+    vec2(0.0, 0.0),
+    vec3(0.0, 0.0, 0.0),
+    0.0,
+    0.0,
+    vec3(0.0, 0.0, 0.0)
+);
+
 uniform float shapesInput[MAX_SHAPES * SHAPE_STRIDE];
 Shape[MAX_SHAPES] shapes;
 
-
 out vec4 fragColor;
 
-const int MAX_STEPS = 100;
+const int MAX_STEPS = 50;
 const float MAX_DIST = 100.0;
 const float EPSILON = 0.001;
 
@@ -52,17 +58,6 @@ void constructShapes() {
     }
 }
 
-// Signed Distance Function for a sphere
-float sdSphere(vec3 p, float radius) {
-    return length(p) - radius;
-}
-
-float sdRoundBox( vec3 p, vec3 dimensions, float r )
-{
-  vec3 q = abs(p) - dimensions/2 + r;
-  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
-}
-
 float sdCappedCylinder( vec3 p, float h, float r )
 {
   vec2 d = abs(vec2(length(p.xy),p.z)) - vec2(r,h);
@@ -75,40 +70,50 @@ float sdShape(vec3 p, vec3 dimensions, float sideR, float topR) {
     return sdCappedCylinder(pAfterElongation, adjustedDimensions.z, sideR - topR) - topR;
 }
 
+struct SdfResult {
+    float dist;
+    Shape shape;
+};
 
 // Scene SDF
-float sceneSDF(vec3 p) {
-    // Animate sphere position with time
-    // return sdSphere(p , 1.0);
+SdfResult sceneSDF(vec3 p) {
+    Shape resultShape = defaultShape;
+    float dist = MAX_DIST;
 
-    return sdShape(p, vec3(0.4,0.2,0.2), 0.05, 0.0);
+    for(int i = 0; i < MAX_SHAPES; i++) {
+        Shape shape = shapes[i];
+        if(shape.size.x < EPSILON) continue;
+        float shapeDist = sdShape(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
+
+        if(shapeDist < dist) {
+            dist = shapeDist;
+            resultShape = shape;
+        }
+    }
+
+    return SdfResult(dist, resultShape);
 }
 
 // Calculate normal using central differences
 vec3 calcNormal(vec3 p) {
-    vec2 e = vec2(EPSILON, 0.0);
-    return normalize(vec3(
-        sceneSDF(p + e.xyy) - sceneSDF(p - e.xyy),
-        sceneSDF(p + e.yxy) - sceneSDF(p - e.yxy),
-        sceneSDF(p + e.yyx) - sceneSDF(p - e.yyx)
-    ));
+    return vec3(0,0,1);
 }
 
 // Ray marching function
-float rayMarch(vec3 ro, vec3 rd) {
+SdfResult rayMarch(vec3 ro, vec3 rd) {
     float dist = 0.0;
     
     for(int i = 0; i < MAX_STEPS; i++) {
         vec3 p = ro + rd * dist;
-        float step = sceneSDF(p);
+        SdfResult result = sceneSDF(p);
         
-        if(step < EPSILON) return dist;
+        if(result.dist < EPSILON) return SdfResult(dist, result.shape);
         if(dist > MAX_DIST) break;
         
-        dist += step;
+        dist += result.dist;
     }
     
-    return MAX_DIST;
+    return SdfResult(MAX_DIST, defaultShape);
 }
 
 // Calculate Phong lighting
@@ -138,15 +143,15 @@ void main() {
     constructShapes();
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.3, 0.3), -2);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(-0.2, -0.2, 1.0));  // Ray direction
+    vec3 ro = vec3(uv + vec2(0.3, 0.3), 2);  // Ray origin (camera position)
+    vec3 rd = normalize(vec3(-0.2, -0.2, -1.0));  // Ray direction
 
     // Ray march
-    float dist = rayMarch(ro, rd);
+    SdfResult result = rayMarch(ro, rd);
     
-    if(dist < MAX_DIST) {
+    if(result.dist < MAX_DIST) {
         // Hit point
-        vec3 p = ro + rd * dist;
+        vec3 p = ro + rd * result.dist;
         
         // Calculate normal and view direction
         vec3 normal = calcNormal(p);
