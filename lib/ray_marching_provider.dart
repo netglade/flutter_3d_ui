@@ -10,8 +10,8 @@ class RayMarchingProvider extends StatelessWidget {
 
   static List<ShapeData> shapes = [
     ShapeData(
-      x: 0,
-      y: 0,
+      x: 0.5,
+      y: 0.5,
       width: 0.4,
       height: 0.2,
       elevation: 0.2,
@@ -20,8 +20,8 @@ class RayMarchingProvider extends StatelessWidget {
       sideColor: Colors.yellow,
     ),
     ShapeData(
-      x: -0.2,
-      y: -0.2,
+      x: 0.4,
+      y: 0.4,
       width: 0.4,
       height: 0.1,
       elevation: 0.2,

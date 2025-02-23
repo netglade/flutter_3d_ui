@@ -39,7 +39,7 @@ const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float ambientStrength = 0.2;
 const float specularStrength = 0.4;
 const float shininess = 32.0;
-const vec3 skyColor = vec3(0.9, 0.9, 1.0);
+const vec3 skyColor = vec3(0.9, 0.1, 1.0);
 
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
@@ -176,20 +176,24 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    vec3 shapeColor = shape.size.x < EPSILON ? skyColor : shape.sideColor;
-    return (ambient + diffuse + specular) * shapeColor;
+    vec3 color = abs(normal.z) < EPSILON && shape.size.x > EPSILON
+        ? shape.sideColor
+        // : vec3(p.x < 0.0 ? 0.5 : p.x, p.y < 0.0 ? 0.5 : p.y, 0.0);
+        : texture(uTexture, vec2(clamp(p.x, 0.0 + EPSILON, 1.0 - EPSILON), clamp(p.y, 0.0 + EPSILON, 1.0 - EPSILON))).rgb;
+
+    return (ambient + diffuse + specular) * color;
 }
 
 float[5] array;
 
 
 void main() {
-    vec2 uv = FlutterFragCoord().xy / resolution.xy - 0.5;
+    vec2 uv = FlutterFragCoord().xy / resolution.xy;
     constructShapes();
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.3, 0.3), 2);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(-0.2, -0.2, -1.0));  // Ray direction
+    vec3 ro = vec3(uv + vec2(0.04, 0.04), 1);  // Ray origin (camera position)
+    vec3 rd = normalize(vec3(-0.04, -0.04, -1.0));  // Ray direction
 
     // Ray march
     SdfResult result = rayMarch(ro, rd);
