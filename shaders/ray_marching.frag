@@ -2,8 +2,24 @@
 
 #include <flutter/runtime_effect.glsl>
 
+const int SHAPE_STRIDE = 10;
+const int MAX_SHAPES = 20;
+
 uniform sampler2D uTexture;
 uniform vec2 resolution;
+uniform float shapeCount;
+
+struct Shape {
+    vec2 position; // x, y coordinates of the center of the shape
+    vec3 size; // width, height, elevation
+    float sideRadius;
+    float topRadius;
+    vec3 sideColor;
+};
+
+uniform float shapesInput[MAX_SHAPES * SHAPE_STRIDE];
+Shape[MAX_SHAPES] shapes;
+
 
 out vec4 fragColor;
 
@@ -20,6 +36,21 @@ const float shininess = 32.0;
 
 // Material properties
 const vec3 objectColor = vec3(0.7, 0.2, 0.2);
+
+// Function to construct a Shape struct from the flat array
+void constructShapes() {
+    for(int i = 0; i < MAX_SHAPES; i++) {
+        Shape shape;
+
+        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]);
+        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]);
+        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5];
+        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6];
+        shape.sideColor = vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]);
+
+        shapes[i] = shape;
+    }
+}
 
 // Signed Distance Function for a sphere
 float sdSphere(vec3 p, float radius) {
@@ -95,12 +126,16 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
+    // Shape shape = constructShape(0);
     return (ambient + diffuse + specular) * objectColor;
 }
+
+float[5] array;
 
 
 void main() {
     vec2 uv = FlutterFragCoord().xy / resolution.xy - 0.5;
+    constructShapes();
     
     // Camera setup
     vec3 ro = vec3(uv + vec2(0.3, 0.3), -2);  // Ray origin (camera position)

@@ -1,11 +1,35 @@
 import 'dart:ui';
 
 import 'package:balatro_flutter/content.dart';
+import 'package:balatro_flutter/shape_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 
 class RayMarchingProvider extends StatelessWidget {
   const RayMarchingProvider({super.key});
+
+  static List<ShapeData> shapes = [
+    ShapeData(
+      x: 0,
+      y: 0,
+      width: 0.4,
+      height: 0.2,
+      elevation: 0.2,
+      sideRadius: 0.05,
+      topRadius: 0.0,
+      sideColor: Colors.yellow,
+    ),
+    ShapeData(
+      x: -0.2,
+      y: -0.2,
+      width: 0.4,
+      height: 0.1,
+      elevation: 0.2,
+      sideRadius: 0.05,
+      topRadius: 0.0,
+      sideColor: Colors.blue,
+    ),
+  ];
 
   Future<FragmentShader> _loadShader() async {
     FragmentProgram program =
@@ -26,6 +50,19 @@ class RayMarchingProvider extends StatelessWidget {
                 final shader = snapshot.data!;
                 shader.setFloat(0, constraints.maxWidth);
                 shader.setFloat(1, constraints.maxHeight);
+                shader.setFloat(2, shapes.length.toDouble());
+
+                final uniformData = List<double>.filled(
+                    shapes.length * ShapeData.stride, 0, growable: false);
+                for (var i = 0; i < shapes.length; i++) {
+                  final shapeData = shapes[i].getData();
+                  uniformData.setAll(i * ShapeData.stride, shapeData);
+                }
+
+                shader.setFloatUniforms((setter) {
+                    setter.setFloats(uniformData);
+                  }, initialIndex: 3);
+
 
                 return AnimatedSampler(
                   (image, size, canvas) {
