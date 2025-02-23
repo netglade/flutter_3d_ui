@@ -1,15 +1,15 @@
 import 'dart:ui';
 
-import 'package:balatro_flutter/ace_card.dart';
+import 'package:balatro_flutter/content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 
-class PixelatedCard extends StatelessWidget {
-  const PixelatedCard({super.key});
+class RayMarchingProvider extends StatelessWidget {
+  const RayMarchingProvider({super.key});
 
   Future<FragmentShader> _loadShader() async {
     FragmentProgram program =
-        await FragmentProgram.fromAsset('./shaders/pixelate.frag');
+        await FragmentProgram.fromAsset('./shaders/ray_marching.frag');
     return program.fragmentShader();
   }
 

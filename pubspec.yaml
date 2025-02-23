@@ -20,4 +20,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   shaders:
-    - shaders/pixelate.frag
+    - shaders/ray_marching.frag
