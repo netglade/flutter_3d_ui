@@ -75,12 +75,8 @@ struct SdfResult {
 
 // Scene SDF
 SdfResult sceneSDF(vec3 p) {
-    if (p.z <= 0.0) {
-        return SdfResult(0.0, defaultShape);
-    }
-
     Shape resultShape = defaultShape;
-    float dist = MAX_DIST;
+    float dist = p.z;
 
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape = shapes[i];
@@ -116,7 +112,7 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     // If we're completely inside, find closest faces
     if(lengthSquared(offsetNonNegative) <= EPSILON) {
         vec3 closest = vec3(0.0, 0.0, 0.0);
-        if(offset.z + EPSILON >= offset.x && offset.z + EPSILON > offset.y) {
+        if(offset.z + EPSILON*2 >= offset.x && offset.z + EPSILON > offset.y) {
             closest.z = sign(p.z);
         } else if(offset.y + EPSILON >= offset.x) {
             closest.y = sign(p.y);
@@ -192,8 +188,8 @@ void main() {
     constructShapes();
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.04, 0.04), 1);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(-0.04, -0.04, -1.0));  // Ray direction
+    vec3 ro = vec3(uv + vec2(0.2, 0.2), 1);  // Ray origin (camera position)
+    vec3 rd = normalize(vec3(-0.2, -0.2, -1.0));  // Ray direction
 
     // Ray march
     SdfResult result = rayMarch(ro, rd);
