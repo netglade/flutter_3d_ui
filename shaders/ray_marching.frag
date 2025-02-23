@@ -34,7 +34,7 @@ const float MAX_DIST = 100.0;
 const float EPSILON = 0.001;
 
 // Light properties
-const vec3 lightPos = vec3(2.0, 2.0, -3.0);
+const vec3 lightPos = vec3(2.0, 2.0, 3.0);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float ambientStrength = 0.1;
 const float specularStrength = 0.5;
@@ -94,9 +94,48 @@ SdfResult sceneSDF(vec3 p) {
     return SdfResult(dist, resultShape);
 }
 
+float lengthSquared( vec3 x)
+{
+    return dot(x, x);
+}
+
+vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
+    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, topR);
+    
+    vec3 offset = abs(p) - adjustedDimensions;
+
+    if(offset.z > 0.0) {
+        offset.x = offset.x > 0 ? max(offset.x - (sideR - topR), 0.0) : offset.x;
+        offset.y = offset.y > 0 ? max(offset.y - (sideR - topR), 0.0) : offset.y;
+    }
+
+    vec3 offsetNonNegative = max(offset, 0.0);
+
+    // If we're completely inside, find closest faces
+    if(lengthSquared(offsetNonNegative) < EPSILON) {
+        vec3 closest = vec3(0.0, 0.0, 0.0);
+        if(offset.x > offset.y && offset.x > offset.z) {
+            closest.x = sign(p.x);
+        } else if(offset.y > offset.z) {
+            closest.y = sign(p.y);
+        } else {
+            closest.z = sign(p.z);
+        }
+        return closest;
+    }
+    
+    // Apply signs to the normalized offset
+    vec3 normal;
+    float len = length(offsetNonNegative);
+    normal.x = (offsetNonNegative.x / len) * sign(p.x);
+    normal.y = (offsetNonNegative.y / len) * sign(p.y);
+    normal.z = (offsetNonNegative.z / len) * sign(p.z);
+    return normal;
+}
+
 // Calculate normal using central differences
-vec3 calcNormal(vec3 p) {
-    return vec3(0,0,1);
+vec3 calcNormal(vec3 p, Shape shape) {
+    return calcShapeNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
 }
 
 // Ray marching function
@@ -117,7 +156,7 @@ SdfResult rayMarch(vec3 ro, vec3 rd) {
 }
 
 // Calculate Phong lighting
-vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir) {
+vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     // Ambient
     vec3 ambient = ambientStrength * lightColor;
     
@@ -132,7 +171,7 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir) {
     vec3 specular = specularStrength * spec * lightColor;
     
     // Shape shape = constructShape(0);
-    return (ambient + diffuse + specular) * objectColor;
+    return (ambient + diffuse + specular) * shape.sideColor;
 }
 
 float[5] array;
@@ -154,11 +193,11 @@ void main() {
         vec3 p = ro + rd * result.dist;
         
         // Calculate normal and view direction
-        vec3 normal = calcNormal(p);
+        vec3 normal = calcNormal(p, result.shape);
         vec3 viewDir = normalize(ro - p);
         
         // Calculate lighting
-        vec3 color = calcPhong(p, normal, viewDir);
+        vec3 color = calcPhong(p, normal, viewDir, result.shape);
         
         fragColor = vec4(color, 1.0);
     } else {

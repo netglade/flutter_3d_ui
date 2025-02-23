@@ -25,7 +25,7 @@ class RayMarchingProvider extends StatelessWidget {
       width: 0.4,
       height: 0.1,
       elevation: 0.2,
-      sideRadius: 0.05,
+      sideRadius: 0.0,
       topRadius: 0.0,
       sideColor: Colors.blue,
     ),
