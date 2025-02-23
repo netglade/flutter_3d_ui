@@ -29,19 +29,17 @@ Shape[MAX_SHAPES] shapes;
 
 out vec4 fragColor;
 
-const int MAX_STEPS = 50;
+const int MAX_STEPS = 60;
 const float MAX_DIST = 100.0;
 const float EPSILON = 0.001;
 
 // Light properties
 const vec3 lightPos = vec3(2.0, 2.0, 3.0);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float ambientStrength = 0.1;
-const float specularStrength = 0.5;
+const float ambientStrength = 0.2;
+const float specularStrength = 0.4;
 const float shininess = 32.0;
-
-// Material properties
-const vec3 objectColor = vec3(0.7, 0.2, 0.2);
+const vec3 skyColor = vec3(0.9, 0.9, 1.0);
 
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
@@ -77,6 +75,10 @@ struct SdfResult {
 
 // Scene SDF
 SdfResult sceneSDF(vec3 p) {
+    if (p.z <= 0.0) {
+        return SdfResult(0.0, defaultShape);
+    }
+
     Shape resultShape = defaultShape;
     float dist = MAX_DIST;
 
@@ -104,7 +106,7 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     
     vec3 offset = abs(p) - adjustedDimensions;
 
-    if(offset.z > 0.0) {
+    if(offset.z + EPSILON > 0.0) {
         offset.x = offset.x > 0 ? max(offset.x - (sideR - topR), 0.0) : offset.x;
         offset.y = offset.y > 0 ? max(offset.y - (sideR - topR), 0.0) : offset.y;
     }
@@ -112,14 +114,14 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     vec3 offsetNonNegative = max(offset, 0.0);
 
     // If we're completely inside, find closest faces
-    if(lengthSquared(offsetNonNegative) < EPSILON) {
+    if(lengthSquared(offsetNonNegative) <= EPSILON) {
         vec3 closest = vec3(0.0, 0.0, 0.0);
-        if(offset.x > offset.y && offset.x > offset.z) {
-            closest.x = sign(p.x);
-        } else if(offset.y > offset.z) {
+        if(offset.z + EPSILON >= offset.x && offset.z + EPSILON > offset.y) {
+            closest.z = sign(p.z);
+        } else if(offset.y + EPSILON >= offset.x) {
             closest.y = sign(p.y);
         } else {
-            closest.z = sign(p.z);
+            closest.x = sign(p.x);
         }
         return closest;
     }
@@ -135,6 +137,10 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
 
 // Calculate normal using central differences
 vec3 calcNormal(vec3 p, Shape shape) {
+    if (shape.size.x < EPSILON) {
+        return vec3(0.0, 0.0, 1.0);
+    }
+
     return calcShapeNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
 }
 
@@ -170,8 +176,8 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    // Shape shape = constructShape(0);
-    return (ambient + diffuse + specular) * shape.sideColor;
+    vec3 shapeColor = shape.size.x < EPSILON ? skyColor : shape.sideColor;
+    return (ambient + diffuse + specular) * shapeColor;
 }
 
 float[5] array;
@@ -202,6 +208,6 @@ void main() {
         fragColor = vec4(color, 1.0);
     } else {
         // Background color
-        fragColor = vec4(0.1, 0.1, 0.1, 1.0);
+        fragColor = vec4(skyColor, 1.0);
     }
 }
