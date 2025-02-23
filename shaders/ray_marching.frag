@@ -26,10 +26,20 @@ float sdSphere(vec3 p, float radius) {
     return length(p) - radius;
 }
 
+float sdRoundBox(vec3 p, float width, float height, float elevation, float r, float topR) { 
+    vec3 q = abs(p);
+    vec3 rounding = vec3(r, r, topR);
+    vec3 dimensions = vec3(width, height, elevation);
+    vec3 qi = q - dimensions + rounding;
+
+    return length(max(qi, 0.0)) + min(max(qi.x, max(qi.y, qi.z)), 0.0) - (q.z > elevation - topR ? topR : r); }
+
 // Scene SDF
 float sceneSDF(vec3 p) {
     // Animate sphere position with time
-    return sdSphere(p , 1.0);
+    // return sdSphere(p , 1.0);
+
+    return sdRoundBox(p, 0.3, 0.3, 0.3, 0.3, 0.3);
 }
 
 // Calculate normal using central differences
@@ -82,7 +92,7 @@ void main() {
     vec2 uv = FlutterFragCoord().xy / resolution.xy - 0.5;
     
     // Camera setup
-    vec3 ro = vec3(0.0, 0.0, -3.0);  // Ray origin (camera position)
+    vec3 ro = vec3(uv + vec2(0.5, 0.5), -1.7);  // Ray origin (camera position)
     vec3 rd = normalize(vec3(uv, 1.0));  // Ray direction
 
     // Ray march
