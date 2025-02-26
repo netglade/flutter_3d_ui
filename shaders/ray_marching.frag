@@ -154,7 +154,7 @@ SdfResult rayMarch(vec3 ro, vec3 rd) {
         dist += result.dist;
     }
     
-    return SdfResult(MAX_DIST, defaultShape);
+    return SdfResult(dist, defaultShape);
 }
 
 // Calculate Phong lighting

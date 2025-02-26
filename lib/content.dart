@@ -15,7 +15,7 @@ class AceCard extends StatelessWidget {
         children: [
           Column(
             children: [
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Column(children: [
                   Text(
@@ -30,6 +30,29 @@ class AceCard extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.black,
                       decoration: TextDecoration.none,
+                    ),
+                  ),
+                  ColoredBox(
+                    color: Colors.blue,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                        color: Colors.white,
+                      ),
+                      child: ColoredBox(
+                        color: Colors.yellow,
+                        child: const Center(
+                          child: Text(
+                            "ahoj",
+                            style: TextStyle(
+                              color: Colors.black,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ]),
