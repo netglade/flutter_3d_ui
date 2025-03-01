@@ -49,15 +49,13 @@ const vec3 skyColor = vec3(0.9, 0.1, 1.0);
 
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
-    float lesserResolution = min(resolution.x, resolution.y);
-
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape;
 
-        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]) / resolution;
-        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]) / vec3(resolution, lesserResolution);
-        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5] / lesserResolution;
-        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6] / lesserResolution;
+        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]);
+        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]);
+        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5];
+        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6];
         shape.sideColor = vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]);
         shape.metallic = shapesInput[i * SHAPE_STRIDE + 10];
         shape.roughness = shapesInput[i * SHAPE_STRIDE + 11]; 
@@ -186,7 +184,7 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     vec3 color = abs(normal.z) < EPSILON && shape.size.x > EPSILON
         ? shape.sideColor
         // : vec3(p.x < 0.0 ? 0.5 : p.x, p.y < 0.0 ? 0.5 : p.y, 0.0);
-        : texture(uTexture, vec2(clamp(p.x, 0.0 + EPSILON, 1.0 - EPSILON), clamp(p.y, 0.0 + EPSILON, 1.0 - EPSILON))).rgb;
+        : texture(uTexture, vec2(clamp(p.x, 0.0 + EPSILON, 1.0 - EPSILON), clamp(p.y, 0.0 + EPSILON, 1.0 - EPSILON) / resolution)).rgb;
 
     return (ambient + diffuse + specular) * color;
 }
@@ -195,11 +193,11 @@ float[5] array;
 
 
 void main() {
-    vec2 uv = FlutterFragCoord().xy / resolution.xy;
+    vec2 uv = FlutterFragCoord().xy;
     constructShapes();
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.2, 0.2), 1);  // Ray origin (camera position)
+    vec3 ro = vec3(uv + vec2(0.2, 0.2) * resolution, 1000);  // Ray origin (camera position)
     vec3 rd = normalize(vec3(-0.2, -0.2, -1.0));  // Ray direction
 
     // Ray march
@@ -210,7 +208,7 @@ void main() {
         vec3 p = ro + rd * result.dist;
         
         // Calculate normal and view direction
-        vec3 normal = calcNormal(p, result.shape);
+        vec3 normal = calcNormal(p, result.shape);  
         vec3 viewDir = normalize(ro - p);
         
         // Calculate lighting
