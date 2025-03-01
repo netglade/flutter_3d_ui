@@ -15,7 +15,7 @@ class SpatialRenderer extends StatefulWidget {
 }
 
 class _SpatialRendererState extends State<SpatialRenderer> {
-  final SpatialBoundaryProvider _provider = SpatialBoundaryProvider();
+  final SpatialRendererProvider _provider = SpatialRendererProvider();
   FragmentShader? _shader = null;
 
   static const int _maxShapes = 5;
@@ -32,12 +32,18 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
           var key = entry.key;
-          if (key.currentContext == null) {
+          if (key.currentContext == null ||
+              key.currentContext?.mounted == false) {
             return null;
           }
 
-          final RenderBox? renderBox =
-              key.currentContext!.findRenderObject() as RenderBox?;
+          final RenderBox? renderBox;
+          try {
+            renderBox = key.currentContext!.findRenderObject() as RenderBox?;
+          } catch (e) {
+            return null;
+          }
+
           if (renderBox == null || !renderBox.hasSize) {
             return null;
           }

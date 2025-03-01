@@ -36,16 +36,17 @@ Shape[MAX_SHAPES] shapes;
 out vec4 fragColor;
 
 const int MAX_STEPS = 60;
-const float MAX_DIST = 100.0;
-const float EPSILON = 0.001;
+const float MAX_DIST = 10000.0;
+const float EPSILON = 0.1;
 
 // Light properties
-const vec3 lightPos = vec3(2.0, 2.0, 3.0);
+const vec3 lightPos = vec3(2.0, 2.0, 1000);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float ambientStrength = 0.2;
 const float specularStrength = 0.4;
 const float shininess = 32.0;
 const vec3 skyColor = vec3(0.9, 0.1, 1.0);
+const vec3 backgroundColor = vec3(0.0, 0.0, 0.0);
 
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
@@ -181,10 +182,15 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    vec3 color = abs(normal.z) < EPSILON && shape.size.x > EPSILON
-        ? shape.sideColor
-        // : vec3(p.x < 0.0 ? 0.5 : p.x, p.y < 0.0 ? 0.5 : p.y, 0.0);
-        : texture(uTexture, vec2(clamp(p.x, 0.0 + EPSILON, 1.0 - EPSILON), clamp(p.y, 0.0 + EPSILON, 1.0 - EPSILON) / resolution)).rgb;
+    vec2 textureUv = vec2(p.x, p.y) / resolution;
+
+    vec3 color = backgroundColor;
+    if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
+        color = backgroundColor;
+    else if (abs(normal.z) < EPSILON && shape.size.x > EPSILON)
+        color = shape.sideColor;
+    else
+        color = texture(uTexture, textureUv).rgb;
 
     return (ambient + diffuse + specular) * color;
 }
@@ -197,8 +203,8 @@ void main() {
     constructShapes();
     
     // Camera setup
-    vec3 ro = vec3(uv + vec2(0.2, 0.2) * resolution, 1000);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(-0.2, -0.2, -1.0));  // Ray direction
+    vec3 ro = vec3(uv, 500);  // Ray origin (camera position)
+    vec3 rd = normalize(vec3(0.1, 0.1, -1.0));  // Ray direction
 
     // Ray march
     SdfResult result = rayMarch(ro, rd);

@@ -22,36 +22,39 @@ class MyApp extends StatelessWidget {
         style: TextStyle(
             color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
         child: SpatialRenderer(
-          child: Center(
-            child: SizedBox(
-              width: 200,
-              height: 200,
-              child: SpatialContainer(
-                sideRadius: 40,
-                elevation: 200,
-                color: Colors.amber,
-                sideColor: Colors.amber,
-                child: Center(
-                  child: Text('ahojky'),
+          child:
+              //  Center(
+              //   child: SizedBox(
+              //     width: 200,
+              //     height: 200,
+              //     child: SpatialContainer(
+              //       sideRadius: 100,
+              //       elevation: 200,
+              //       color: Colors.amber,
+              //       sideColor: Colors.amber,
+              //       child: Center(
+              //         child: Text('ahojky'),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              Center(
+            child: ListView(
+                children: List.generate(
+              4,
+              (i) => SizedBox(
+                width: 200,
+                height: 200,
+                child: SpatialContainer(
+                  elevation: i * 200.0,
+                  color: Colors.amber,
+                  sideColor: Colors.amber,
+                  child: Center(
+                    child: Text('ahojky'),
+                  ),
                 ),
               ),
-            ),
-            // ListView(
-            //     children: List.generate(
-            //   4,
-            //   (i) => SizedBox(
-            //     width: 200,
-            //     height: 200,
-            //     child: SpatialContainer(
-            //       elevation: (4-i) * 50,
-            //       color: Colors.amber,
-            //       sideColor: Colors.amber,
-            //       child: Center(
-            //         child: Text('ahojky'),
-            //       ),
-            //     ),
-            //   ),
-            // )),
+            )),
           ),
         ),
       ),

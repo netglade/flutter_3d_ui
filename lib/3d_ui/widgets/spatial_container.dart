@@ -45,35 +45,32 @@ class SpatialContainer extends StatefulWidget {
 
 class SpatialContainerState extends State<SpatialContainer> {
   final GlobalKey _key = GlobalKey();
+  late SpatialRendererProvider _provider;
 
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final spatialBoundaryProvider =
-          Provider.of<SpatialBoundaryProvider>(context, listen: false);
-      spatialBoundaryProvider.addOrUpdateSpatialContainer(
-          _key, widget.getData());
+      _provider = Provider.of<SpatialRendererProvider>(context, listen: false);
+      _provider.addOrUpdateSpatialContainer(_key, widget.getData());
     });
+  }
+
+  @override
+  void dispose() {
+    _provider.unregisterSpatialContainer(_key);
+
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant SpatialContainer oldWidget) {
     final spatialBoundaryProvider =
-        Provider.of<SpatialBoundaryProvider>(context, listen: false);
+        Provider.of<SpatialRendererProvider>(context, listen: false);
     spatialBoundaryProvider.addOrUpdateSpatialContainer(_key, widget.getData());
 
     super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void dispose() {
-    final spatialBoundaryProvider =
-        Provider.of<SpatialBoundaryProvider>(context, listen: false);
-    spatialBoundaryProvider.unregisterSpatialContainer(_key);
-
-    super.dispose();
   }
 
   @override
