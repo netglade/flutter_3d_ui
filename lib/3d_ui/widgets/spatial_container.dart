@@ -1,5 +1,5 @@
-
-import 'package:balatro_flutter/3d_ui/spatial_boundary_provider.dart';
+import 'package:balatro_flutter/3d_ui/models/spatial_container_data.dart';
+import 'package:balatro_flutter/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +14,8 @@ class SpatialContainer extends StatefulWidget {
   final double roughness;
   final double reflectance;
 
-  const SpatialContainer(this.child, {
+  const SpatialContainer({
+    required this.child,
     Key? key,
     this.elevation = 8.0,
     this.sideRadius = 0.0,
@@ -28,6 +29,18 @@ class SpatialContainer extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => SpatialContainerState();
+
+  SpatialContainerData getData() {
+    return SpatialContainerData(
+      elevation: elevation,
+      sideRadius: sideRadius,
+      topRadius: topRadius,
+      sideColor: sideColor,
+      metallic: metallic,
+      roughness: roughness,
+      reflectance: reflectance,
+    );
+  }
 }
 
 class SpatialContainerState extends State<SpatialContainer> {
@@ -38,24 +51,39 @@ class SpatialContainerState extends State<SpatialContainer> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final spatialBoundaryProvider = Provider.of<SpatialBoundaryProvider>(context, listen: false);
-      spatialBoundaryProvider.registerSpatialContainerKey(_key);
+      final spatialBoundaryProvider =
+          Provider.of<SpatialBoundaryProvider>(context, listen: false);
+      spatialBoundaryProvider.addOrUpdateSpatialContainer(
+          _key, widget.getData());
     });
   }
 
   @override
+  void didUpdateWidget(covariant SpatialContainer oldWidget) {
+    final spatialBoundaryProvider =
+        Provider.of<SpatialBoundaryProvider>(context, listen: false);
+    spatialBoundaryProvider.addOrUpdateSpatialContainer(_key, widget.getData());
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void dispose() {
-    final spatialBoundaryProvider = Provider.of<SpatialBoundaryProvider>(context, listen: false);
-    spatialBoundaryProvider.unregisterSpatialContainerKey(_key);
+    final spatialBoundaryProvider =
+        Provider.of<SpatialBoundaryProvider>(context, listen: false);
+    spatialBoundaryProvider.unregisterSpatialContainer(_key);
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(decoration: BoxDecoration(
-      color: widget.color,
-      borderRadius: BorderRadius.circular(widget.sideRadius),
-    ), child: widget.child);
+    return DecoratedBox(
+        key: _key,
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(widget.sideRadius),
+        ),
+        child: widget.child);
   }
 }

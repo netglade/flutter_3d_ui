@@ -3,8 +3,6 @@ import 'dart:core';
 import 'dart:ui';
 
 class SpatialContainerData{
-  final Size size;
-  final Offset offset;
   final double elevation;
   final double sideRadius;
   final double topRadius;
@@ -13,9 +11,7 @@ class SpatialContainerData{
   final double roughness;
   final double reflectance;
 
-  SpatialContainerData({
-    required this.size,
-    required this.offset,
+  const SpatialContainerData({
     required this.elevation,
     required this.sideRadius,
     required this.topRadius,

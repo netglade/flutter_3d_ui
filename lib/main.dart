@@ -1,4 +1,5 @@
-import 'package:balatro_flutter/ray_marching_provider.dart';
+import 'package:balatro_flutter/3d_ui/widgets/spatial_container.dart';
+import 'package:balatro_flutter/3d_ui/widgets/spatial_renderer.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,8 +19,20 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: DefaultTextStyle(
-        style: TextStyle(color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
-        child: RayMarchingProvider(),
+        style: TextStyle(
+            color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
+        child: SpatialRenderer(
+          child: Center(
+            child: SpatialContainer(
+              color: Colors.amber,
+              sideColor: Colors.amber,
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text('ahojky'),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
