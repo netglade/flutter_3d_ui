@@ -23,13 +23,57 @@ class MyApp extends StatelessWidget {
             color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
         child: SpatialRenderer(
           child: Center(
-            child: SpatialContainer(
-              color: Colors.amber,
-              sideColor: Colors.amber,
-              child: Padding(
-                padding: EdgeInsets.all(10),
-                child: Text('ahojky'),
-              ),
+            child: ListView(
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: SpatialContainer(
+                    elevation: 100,
+                    color: Colors.amber,
+                    sideColor: Colors.amber,
+                    child: Center(
+                      child: Text('ahojky'),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: SpatialContainer(
+                    elevation: 100,
+                    color: Colors.red,
+                    sideColor: Colors.red,
+                    child: Center(
+                      child: Text('ahojky'),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: SpatialContainer(
+                    elevation: 100,
+                    color: Colors.amber,
+                    sideColor: Colors.amber,
+                    child: Center(
+                      child: Text('ahojky'),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: SpatialContainer(
+                    elevation: 100,
+                    color: Colors.amber,
+                    sideColor: Colors.amber,
+                    child: Center(
+                      child: Text('ahojky'),
+                    ),
+                  ),
+                )
+              ],
             ),
           ),
         ),

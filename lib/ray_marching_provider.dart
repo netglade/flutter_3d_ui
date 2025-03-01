@@ -33,7 +33,7 @@ class RayMarchingProvider extends StatelessWidget {
 
   Future<FragmentShader> _loadShader() async {
     FragmentProgram program =
-        await FragmentProgram.fromAsset('./shaders/ray_marching.frag');
+        await FragmentProgram.fromAsset('./shaders/ray_tracing.frag');
     return program.fragmentShader();
   }
 

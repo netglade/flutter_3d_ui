@@ -2,8 +2,8 @@
 
 #include <flutter/runtime_effect.glsl>
 
-const int SHAPE_STRIDE = 10;
-const int MAX_SHAPES = 2;
+const int SHAPE_STRIDE = 14;
+const int MAX_SHAPES = 5;
 
 uniform sampler2D uTexture;
 uniform vec2 resolution;
@@ -11,9 +11,13 @@ uniform vec2 resolution;
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
     vec3 size; // width, height, elevation
+    float elevation;
     float sideRadius;
     float topRadius;
     vec3 sideColor;
+    float metallic;
+    float roughness;
+    float reflectance;
 };
 
 const Shape defaultShape = Shape(
@@ -21,7 +25,11 @@ const Shape defaultShape = Shape(
     vec3(0.0, 0.0, 0.0),
     0.0,
     0.0,
-    vec3(0.0, 0.0, 0.0)
+    0.0,
+    vec3(0.0, 0.0, 0.0),
+    0.0,
+    0.0,
+    0.0
 );
 
 uniform float shapesInput[MAX_SHAPES * SHAPE_STRIDE];
@@ -43,13 +51,15 @@ const vec3 skyColor = vec3(0.9, 0.1, 1.0);
 
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
+    float lesserResolution = min(resolution.x, resolution.y);
+
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape;
 
-        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]);
-        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]);
-        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5];
-        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6];
+        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]) / resolution;
+        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]) / vec3(resolution, lesserResolution);
+        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5] / lesserResolution;
+        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6] / lesserResolution;
         shape.sideColor = vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]);
 
         shapes[i] = shape;
