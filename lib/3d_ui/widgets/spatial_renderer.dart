@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:balatro_flutter/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:provider/provider.dart';
 
@@ -17,24 +16,11 @@ class SpatialRenderer extends StatefulWidget {
 
 class _SpatialRendererState extends State<SpatialRenderer> {
   final SpatialBoundaryProvider _provider = SpatialBoundaryProvider();
-  late Ticker _ticker;
   FragmentShader? _shader = null;
 
   static const int _maxShapes = 5;
 
-  @override
-  void initState() {
-    super.initState();
-    _ticker = Ticker(_onTick)..start();
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  void _onTick(Duration _) {
+  void _setShaderUniforms() {
     if (_shader == null) {
       return;
     }
@@ -94,7 +80,6 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
     }, initialIndex: 2);
-    setState(() => {});
   }
 
   Future<void> _loadShader() async {
@@ -120,6 +105,8 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
                 return AnimatedSampler((image, size, canvas) {
                   _shader!.setImageSampler(0, image);
+                  _setShaderUniforms();
+
                   final paint = Paint()..shader = _shader!;
                   canvas.drawRect(
                     Rect.fromLTWH(0, 0, size.width, size.height),
