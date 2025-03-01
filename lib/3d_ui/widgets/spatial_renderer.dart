@@ -94,6 +94,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
     }, initialIndex: 2);
+    setState(() => {});
   }
 
   Future<void> _loadShader() async {
