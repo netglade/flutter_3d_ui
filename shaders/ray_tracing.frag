@@ -2,7 +2,7 @@
 
 #include <flutter/runtime_effect.glsl>
 
-const int SHAPE_STRIDE = 14;
+const int SHAPE_STRIDE = 13;
 const int MAX_SHAPES = 5;
 
 uniform sampler2D uTexture;
@@ -11,7 +11,6 @@ uniform vec2 resolution;
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
     vec3 size; // width, height, elevation
-    float elevation;
     float sideRadius;
     float topRadius;
     vec3 sideColor;
@@ -23,7 +22,6 @@ struct Shape {
 const Shape defaultShape = Shape(
     vec2(0.0, 0.0),
     vec3(0.0, 0.0, 0.0),
-    0.0,
     0.0,
     0.0,
     vec3(0.0, 0.0, 0.0),
@@ -61,6 +59,9 @@ void constructShapes() {
         shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5] / lesserResolution;
         shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6] / lesserResolution;
         shape.sideColor = vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]);
+        shape.metallic = shapesInput[i * SHAPE_STRIDE + 10];
+        shape.roughness = shapesInput[i * SHAPE_STRIDE + 11]; 
+        shape.reflectance = shapesInput[i * SHAPE_STRIDE + 12];
 
         shapes[i] = shape;
     }

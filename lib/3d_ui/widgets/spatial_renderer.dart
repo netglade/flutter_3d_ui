@@ -88,7 +88,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
     final uniforms = [
       ...shapeData,
-      ...List.filled(_maxShapes - shapeData.length, List.filled(14, 0.0))
+      ...List.filled(_maxShapes - shapeData.length, List.filled(13, 0.0))
     ].expand((element) => element).toList();
 
     _shader!.setFloatUniforms((setter) {
