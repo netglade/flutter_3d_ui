@@ -66,41 +66,21 @@ void constructShapes() {
     }
 }
 
-float sdCappedCylinder( vec3 p, float h, float r )
+vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
 {
-  vec2 d = abs(vec2(length(p.xy),p.z)) - vec2(r,h);
-  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
-}
-
-float sdShape(vec3 p, vec3 dimensions, float sideR, float topR) {
-    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, 0) - vec3(0, 0, topR);
-    vec3 pAfterElongation = p - vec3(clamp(p.x, -adjustedDimensions.x, adjustedDimensions.x), clamp(p.y, -adjustedDimensions.y, adjustedDimensions.y), 0);
-    return sdCappedCylinder(pAfterElongation, adjustedDimensions.z, sideR - topR) - topR;
+    vec3 oc = ro - ce;
+    float b = dot( oc, rd );
+    float c = dot( oc, oc ) - ra*ra;
+    float h = b*b - c;
+    if( h<0.0 ) return vec2(-1); // no intersection
+    h = sqrt( h );
+    return vec2( -b-h, -b+h );
 }
 
 struct SdfResult {
     float dist;
     Shape shape;
 };
-
-// Scene SDF
-SdfResult sceneSDF(vec3 p) {
-    Shape resultShape = defaultShape;
-    float dist = p.z;
-
-    for(int i = 0; i < MAX_SHAPES; i++) {
-        Shape shape = shapes[i];
-        if(shape.size.x < EPSILON) continue;
-        float shapeDist = sdShape(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
-
-        if(shapeDist < dist) {
-            dist = shapeDist;
-            resultShape = shape;
-        }
-    }
-
-    return SdfResult(dist, resultShape);
-}
 
 float lengthSquared( vec3 x)
 {
@@ -151,20 +131,21 @@ vec3 calcNormal(vec3 p, Shape shape) {
 }
 
 // Ray marching function
-SdfResult rayMarch(vec3 ro, vec3 rd) {
-    float dist = 0.0;
-    
-    for(int i = 0; i < MAX_STEPS; i++) {
-        vec3 p = ro + rd * dist;
-        SdfResult result = sceneSDF(p);
-        
-        if(result.dist < EPSILON) return SdfResult(dist, result.shape);
-        if(dist > MAX_DIST) break;
-        
-        dist += result.dist;
+SdfResult rayTrace(vec3 ro, vec3 rd) {    
+    Shape resultShape = defaultShape;
+    float dist = MAX_DIST;
+
+    for(int i = 0; i < MAX_SHAPES; i++) {
+        Shape shape = shapes[i];
+        if(shape.size.x < EPSILON) continue;
+        vec2 intersect = sphIntersect(ro - vec3(shape.position, 0.0), rd, vec3(0.0), 50);
+        if(intersect.x > 0.0 && intersect.x < dist) {
+            dist = intersect.x;
+            resultShape = shape;
+        }
     }
-    
-    return SdfResult(dist, defaultShape);
+
+    return SdfResult(dist, resultShape);    
 }
 
 // Calculate Phong lighting
@@ -207,7 +188,7 @@ void main() {
     vec3 rd = normalize(vec3(0.1, 0.1, -1.0));  // Ray direction
 
     // Ray march
-    SdfResult result = rayMarch(ro, rd);
+    SdfResult result = rayTrace(ro, rd);
     
     if(result.dist < MAX_DIST) {
         // Hit point
