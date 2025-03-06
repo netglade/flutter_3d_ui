@@ -42,15 +42,22 @@ class MyApp extends StatelessWidget {
             child: ListView(
                 children: List.generate(
               4,
-              (i) => SizedBox(
-                width: 200,
-                height: 200,
-                child: SpatialContainer(
-                  elevation: i * 200.0,
-                  color: Colors.amber,
-                  sideColor: Colors.amber,
-                  child: Center(
-                    child: Text('ahojky'),
+              (i) => Center(
+                child: SizedBox(
+                  width: 300,
+                  height: 200,
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: SpatialContainer(
+                      sideRadius: 30,
+                      topRadius: 30,
+                      elevation: 200,
+                      color: Colors.amber,
+                      sideColor: Colors.amber,
+                      child: Center(
+                        child: Text('ahojky'),
+                      ),
+                    ),
                   ),
                 ),
               ),

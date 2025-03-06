@@ -109,16 +109,19 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                 _shader!.setFloat(0, constraints.maxWidth);
                 _shader!.setFloat(1, constraints.maxHeight);
 
-                return AnimatedSampler((image, size, canvas) {
-                  _shader!.setImageSampler(0, image);
-                  _setShaderUniforms();
+                return AnimatedSampler(
+                  (image, size, canvas) {
+                    _shader!.setImageSampler(0, image);
+                    _setShaderUniforms();
 
-                  final paint = Paint()..shader = _shader!;
-                  canvas.drawRect(
-                    Rect.fromLTWH(0, 0, size.width, size.height),
-                    paint,
-                  );
-                }, child: widget.child);
+                    final paint = Paint()..shader = _shader!;
+                    canvas.drawRect(
+                      Rect.fromLTWH(0, 0, size.width, size.height),
+                      paint,
+                    );
+                  },
+                  child: widget.child,
+                );
               }));
         });
   }
