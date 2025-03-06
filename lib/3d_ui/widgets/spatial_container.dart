@@ -75,12 +75,15 @@ class SpatialContainerState extends State<SpatialContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-        key: _key,
-        decoration: BoxDecoration(
-          color: widget.color,
-          borderRadius: BorderRadius.circular(widget.sideRadius),
-        ),
-        child: widget.child);
+    return Padding(
+      key: _key,
+      padding: EdgeInsets.all(1.0),
+      child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.circular(widget.sideRadius),
+          ),
+          child: widget.child),
+    );
   }
 }

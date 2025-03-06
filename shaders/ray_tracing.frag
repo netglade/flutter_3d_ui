@@ -255,7 +255,7 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    float textureSamplingEpsilon = 1.0;
+    float textureSamplingEpsilon = 2.0;
 
     if (normal.z < EPSILON * 10 && shape.size.x > EPSILON) {
         p -= normal * textureSamplingEpsilon;
@@ -266,10 +266,10 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
         vec2 difference = (abs(shifted) - shape.size.xy / 2.0);
 
         if (abs(difference.x) < textureSamplingEpsilon) {
-            p.x -= textureSamplingEpsilon * sign(difference.x);
+            p.x -= textureSamplingEpsilon * sign(shifted.x);
         }
         if (abs(difference.y) < textureSamplingEpsilon) {
-            p.y -= textureSamplingEpsilon * sign(difference.y);
+            p.y -= textureSamplingEpsilon * sign(shifted.y);
         }
     }
 
