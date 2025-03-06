@@ -42,7 +42,7 @@ const float EPSILON = 0.1;
 // Light properties
 const vec3 lightPos = vec3(1000, -1000, 1000);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float ambientStrength = 0.5;
+const float ambientStrength = 0.2;
 const float specularStrength = 0.4;
 const float shininess = 32.0;
 const vec3 skyColor = vec3(0.9, 0.1, 1.0);
@@ -255,13 +255,30 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    vec3 texturePoint = p - normal;
-    vec2 textureUv = vec2(texturePoint.x, texturePoint.y) / resolution;
+    float textureSamplingEpsilon = 1.0;
+
+    if (normal.z < EPSILON * 10 && shape.size.x > EPSILON) {
+        p -= normal * textureSamplingEpsilon;
+    }
+    else
+     if (shape.size.x > EPSILON) {
+        vec2 shifted = p.xy - shape.position;
+        vec2 difference = (abs(shifted) - shape.size.xy / 2.0);
+
+        if (abs(difference.x) < textureSamplingEpsilon) {
+            p.x -= textureSamplingEpsilon * sign(difference.x);
+        }
+        if (abs(difference.y) < textureSamplingEpsilon) {
+            p.y -= textureSamplingEpsilon * sign(difference.y);
+        }
+    }
+
+    vec2 textureUv = vec2(p.x, p.y) / resolution;
 
     vec3 color = backgroundColor;
     if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
         color = backgroundColor;
-    else if (abs(normal.z) < EPSILON && shape.size.x > EPSILON)
+    else if (normal.z < EPSILON && shape.size.x > EPSILON)
         color = shape.sideColor;
     else
         color = texture(uTexture, textureUv).rgb;
