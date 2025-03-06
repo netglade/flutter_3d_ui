@@ -77,6 +77,11 @@ vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
     return vec2( -b-h, -b+h );
 }
 
+float plaIntersect( in vec3 ro, in vec3 rd, in vec4 p )
+{
+    return -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
+}
+
 struct SdfResult {
     float dist;
     Shape shape;
@@ -133,7 +138,10 @@ vec3 calcNormal(vec3 p, Shape shape) {
 // Ray marching function
 SdfResult rayTrace(vec3 ro, vec3 rd) {    
     Shape resultShape = defaultShape;
-    float dist = MAX_DIST;
+
+    float dist = plaIntersect(ro, rd, vec4(0.0, 0.0, 1.0, 0.0));
+    if(dist < 0)
+        dist = MAX_DIST;
 
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape = shapes[i];
