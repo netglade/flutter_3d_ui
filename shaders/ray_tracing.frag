@@ -135,88 +135,125 @@ vec3 calcNormal(vec3 p, Shape shape) {
     return calcShapeNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
 }
 
-// axis aligned box centered at the origin, with dimensions "size" and extruded by "rad"
-float roundedboxIntersect( in vec3 ro, in vec3 rd, in vec3 size, in float rad )
-{
-    // bounding box
-    vec3 m = 1.0/rd;
-    vec3 n = m*ro;
-    vec3 k = abs(m)*(size+rad);
-    vec3 t1 = -n - k;
-    vec3 t2 = -n + k;
-    float tN = max( max( t1.x, t1.y ), t1.z );
-    float tF = min( min( t2.x, t2.y ), t2.z );
-    if( tN>tF || tF<0.0) return -1.0;
-    float t = tN;
-
-    // convert to first octant
-    vec3 pos = ro+t*rd;
-    vec3 s = sign(pos);
-    ro  *= s;
-    rd  *= s;
-    pos *= s;
-        
-    // faces
-    pos -= size;
-    pos = max( pos.xyz, pos.yzx );
-    if( min(min(pos.x,pos.y),pos.z) < 0.0 ) return t;
-
-    // some precomputation
-    vec3 oc = ro - size;
-    vec3 dd = rd*rd;
-    vec3 oo = oc*oc;
-    vec3 od = oc*rd;
-    float ra2 = rad*rad;
-
-    t = 1e20;        
-
-    // corner
-    {
-    float b = od.x + od.y + od.z;
-    float c = oo.x + oo.y + oo.z - ra2;
-    float h = b*b - c;
-    if( h>0.0 ) t = -b-sqrt(h);
-    }
-    // edge X
-    {
-    float a = dd.y + dd.z;
-    float b = od.y + od.z;
-    float c = oo.y + oo.z - ra2;
-    float h = b*b - a*c;
-    if( h>0.0 )
-    {
-        h = (-b-sqrt(h))/a;
-        if( h>0.0 && h<t && abs(ro.x+rd.x*h)<size.x ) t = h;
-    }
-    }
-    // edge Y
-    {
-    float a = dd.z + dd.x;
-    float b = od.z + od.x;
-    float c = oo.z + oo.x - ra2;
-    float h = b*b - a*c;
-    if( h>0.0 )
-    {
-        h = (-b-sqrt(h))/a;
-        if( h>0.0 && h<t && abs(ro.y+rd.y*h)<size.y ) t = h;
-    }
-    }
-    // edge Z
-    {
-    float a = dd.x + dd.y;
-    float b = od.x + od.y;
-    float c = oo.x + oo.y - ra2;
-    float h = b*b - a*c;
-    if( h>0.0 )
-    {
-        h = (-b-sqrt(h))/a;
-        if( h>0.0 && h<t && abs(ro.z+rd.z*h)<size.z ) t = h;
-    }
-    }
-
-    if( t>1e19 ) t=-1.0;
+// This function calculates the intersection of a ray with a rounded box
+// Parameters:
+// - rayOrigin: ray origin (vec3)
+// - rayDirection: ray direction (vec3)
+// - boxHalfSize: half-dimensions of the box before rounding (vec3)
+// - cornerRadius: radius of the rounded corners/edges
+// Returns: distance to intersection or -1 if no intersection
+float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHalfSize, in float cornerRadius) {
+    // Calculate values for a fast AABB intersection test (bounding box)
+    // inverseDirection = inverse of ray direction, used for slab method ray-box intersection
+    vec3 inverseDirection = 1.0/rayDirection;
+    // scaledOrigin = ray origin multiplied by inverse direction
+    vec3 scaledOrigin = inverseDirection * rayOrigin;
+    // boundaryDistance = absolute distance from origin to box boundaries (including rounded part)
+    vec3 boundaryDistance = abs(inverseDirection) * (boxHalfSize + cornerRadius);
     
-    return t;
+    // nearIntersections and farIntersections are the near and far intersections for each dimension
+    vec3 nearIntersections = -scaledOrigin - boundaryDistance;
+    vec3 farIntersections = -scaledOrigin + boundaryDistance;
+    
+    // furthestNearDist = furthest near intersection (enter point)
+    float furthestNearDist = max(max(nearIntersections.x, nearIntersections.y), nearIntersections.z);
+    // closestFarDist = closest far intersection (exit point)
+    float closestFarDist = min(min(farIntersections.x, farIntersections.y), farIntersections.z);
+    
+    // Early exit if ray misses the bounding box or box is behind ray
+    if(furthestNearDist > closestFarDist || closestFarDist < 0.0) return -1.0;
+    
+    // intersectionDist is our initial intersection with the bounding box
+    float intersectionDist = furthestNearDist;
+    
+    // Calculate the intersection point
+    vec3 intersectionPoint = rayOrigin + intersectionDist * rayDirection;
+    
+    // Get the sign of each component to transform everything to first octant
+    // (This simplifies the calculations by handling all symmetrical cases at once)
+    vec3 componentSigns = sign(intersectionPoint);
+    
+    // Transform ray and position to first octant using component-wise multiplication
+    rayOrigin *= componentSigns;
+    rayDirection *= componentSigns;
+    intersectionPoint *= componentSigns;
+    
+    // Adjust position relative to the box surface
+    intersectionPoint -= boxHalfSize;
+    
+    // Check if we're closer to an edge/corner or a face
+    // This swaps dimensions to simplify logic (yzx swizzle)
+    intersectionPoint = max(intersectionPoint.xyz, intersectionPoint.yzx);
+    
+    // If any dimension is negative, we hit a face directly (not an edge/corner)
+    if(min(min(intersectionPoint.x, intersectionPoint.y), intersectionPoint.z) < 0.0) return intersectionDist;
+    
+    // Precompute values for the more complex rounded edge/corner intersections
+    vec3 originToCorner = rayOrigin - boxHalfSize;           // Vector from ray origin to box corner
+    vec3 directionSquared = rayDirection * rayDirection;     // Squared ray direction components
+    vec3 cornerDistSquared = originToCorner * originToCorner; // Squared corner-to-origin components
+    vec3 originCornerDotDir = originToCorner * rayDirection;  // Dot products between corner-to-origin and ray dir
+    float radiusSquared = cornerRadius * cornerRadius;        // Squared radius
+    intersectionDist = 1e20;                                  // Reset intersectionDist to a very large value
+    
+    // // Check for intersection with rounded corner (sphere)
+    // {
+    //     float sphereB = originCornerDotDir.x + originCornerDotDir.y + originCornerDotDir.z;
+    //     float sphereC = cornerDistSquared.x + cornerDistSquared.y + cornerDistSquared.z - radiusSquared;
+    //     float discriminant = sphereB * sphereB - sphereC;
+    //     if(discriminant > 0.0) intersectionDist = -sphereB - sqrt(discriminant);  // Quadratic formula solution
+    // }
+    
+    // Check for intersection with rounded edge along X axis (cylinder)
+    {
+        float cylA = directionSquared.y + directionSquared.z;
+        float cylB = originCornerDotDir.y + originCornerDotDir.z;
+        float cylC = cornerDistSquared.y + cornerDistSquared.z - radiusSquared;
+        float discriminant = cylB * cylB - cylA * cylC;
+        if(discriminant > 0.0) {
+            float solution = (-cylB - sqrt(discriminant)) / cylA;
+            // Only accept if hit point is within box bounds and closer than any previous hit
+            if(solution > 0.0 && solution < intersectionDist && 
+               abs(rayOrigin.x + rayDirection.x * solution) < boxHalfSize.x) {
+                intersectionDist = solution;
+            }
+        }
+    }
+    
+    // Check for intersection with rounded edge along Y axis (cylinder)
+    {
+        float cylA = directionSquared.z + directionSquared.x;
+        float cylB = originCornerDotDir.z + originCornerDotDir.x;
+        float cylC = cornerDistSquared.z + cornerDistSquared.x - radiusSquared;
+        float discriminant = cylB * cylB - cylA * cylC;
+        if(discriminant > 0.0) {
+            float solution = (-cylB - sqrt(discriminant)) / cylA;
+            if(solution > 0.0 && solution < intersectionDist && 
+               abs(rayOrigin.y + rayDirection.y * solution) < boxHalfSize.y) {
+                intersectionDist = solution;
+            }
+        }
+    }
+    
+    // Check for intersection with rounded edge along Z axis (cylinder)
+    {
+        float cylA = directionSquared.x + directionSquared.y;
+        float cylB = originCornerDotDir.x + originCornerDotDir.y;
+        float cylC = cornerDistSquared.x + cornerDistSquared.y - radiusSquared;
+        float discriminant = cylB * cylB - cylA * cylC;
+        if(discriminant > 0.0) {
+            float solution = (-cylB - sqrt(discriminant)) / cylA;
+            if(solution > 0.0 && solution < intersectionDist && 
+               abs(rayOrigin.z + rayDirection.z * solution) < boxHalfSize.z) {
+                intersectionDist = solution;
+            }
+        }
+    }
+    
+    // If no valid intersection was found, return -1
+    if(intersectionDist > 1e19) intersectionDist = -1.0;
+    
+    return intersectionDist;  // Return the intersection distance
 }
 
 // Ray marching function
