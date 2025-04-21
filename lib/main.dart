@@ -49,8 +49,8 @@ class MyApp extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child: SpatialContainer(
-                      sideRadius: 50,
-                      topRadius: 20,
+                      sideRadius: 40,
+                      topRadius: 10,
                       elevation: 200,
                       color: Colors.amber,
                       sideColor: Colors.amber,

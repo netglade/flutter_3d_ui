@@ -16,7 +16,7 @@ struct Shape {
     vec3 sideColor;
     float metallic;
     float roughness;
-    float reflectance;
+    float reflectance; 
 };
 
 const Shape defaultShape = Shape(
@@ -140,16 +140,16 @@ vec3 calcNormal(vec3 p, Shape shape) {
 // - rayOrigin: ray origin (vec3)
 // - rayDirection: ray direction (vec3)
 // - boxHalfSize: half-dimensions of the box before rounding (vec3)
-// - cornerRadius: radius of the rounded corners/edges
+// - sideRadius: radius of the rounded corners/edges
 // Returns: distance to intersection or -1 if no intersection
-float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHalfSize, in float cornerRadius) {
+float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHalfSize, in float sideRadius, in float topRadius) {
     // Calculate values for a fast AABB intersection test (bounding box)
     // inverseDirection = inverse of ray direction, used for slab method ray-box intersection
     vec3 inverseDirection = 1.0/rayDirection;
     // scaledOrigin = ray origin multiplied by inverse direction
     vec3 scaledOrigin = inverseDirection * rayOrigin;
     // boundaryDistance = absolute distance from origin to box boundaries (including rounded part)
-    vec3 boundaryDistance = abs(inverseDirection) * (boxHalfSize + cornerRadius);
+    vec3 boundaryDistance = abs(inverseDirection) * (boxHalfSize + vec3(sideRadius, sideRadius, topRadius));
     
     // nearIntersections and farIntersections are the near and far intersections for each dimension
     vec3 nearIntersections = -scaledOrigin - boundaryDistance;
@@ -177,10 +177,19 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     rayOrigin *= componentSigns;
     rayDirection *= componentSigns;
     intersectionPoint *= componentSigns;
+    float intersectionDistFormer = intersectionDist;
     
     // Adjust position relative to the box surface
     intersectionPoint -= boxHalfSize;
     
+    if((intersectionPoint.x < 0 && intersectionPoint.y < sideRadius - topRadius)) {
+        return intersectionDist;
+    }
+
+    if (intersectionPoint.y < 0 && intersectionPoint.x < sideRadius - topRadius) {
+        return intersectionDist;
+    }
+
     // Check if we're closer to an edge/corner or a face
     // This swaps dimensions to simplify logic (yzx swizzle)
     intersectionPoint = max(intersectionPoint.xyz, intersectionPoint.yzx);
@@ -189,11 +198,15 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     if(min(min(intersectionPoint.x, intersectionPoint.y), intersectionPoint.z) < 0.0) return intersectionDist;
     
     // Precompute values for the more complex rounded edge/corner intersections
-    vec3 originToCorner = rayOrigin - boxHalfSize;           // Vector from ray origin to box corner
+    vec3 originToCorner = rayOrigin - boxHalfSize - vec3(sideRadius - topRadius, sideRadius - topRadius, 0.0);           // Vector from ray origin to box corner
+    vec3 originToCornerZ = rayOrigin - boxHalfSize;
+    vec3 cornerDistSquaredZ = originToCornerZ * originToCornerZ; // Squared distance from ray origin to box corner
+    vec3 originCornerDotDirZ = originToCornerZ * rayDirection;  // Dot products between corner-to-origin and ray dir
     vec3 directionSquared = rayDirection * rayDirection;     // Squared ray direction components
     vec3 cornerDistSquared = originToCorner * originToCorner; // Squared corner-to-origin components
     vec3 originCornerDotDir = originToCorner * rayDirection;  // Dot products between corner-to-origin and ray dir
-    float radiusSquared = cornerRadius * cornerRadius;        // Squared radius
+    float topRadiusSquared = topRadius * topRadius;        // Squared radius
+    float sideRadiusSquared = sideRadius * sideRadius;  // Squared corner radius
     intersectionDist = 1e20;                                  // Reset intersectionDist to a very large value
     
     // // Check for intersection with rounded corner (sphere)
@@ -203,12 +216,22 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     //     float discriminant = sphereB * sphereB - sphereC;
     //     if(discriminant > 0.0) intersectionDist = -sphereB - sqrt(discriminant);  // Quadratic formula solution
     // }
+
+    // Check for intersection with rounded edge along Z axis (inner smaller but taller cylinder)
+    {
+        float t = (boxHalfSize.z - rayOrigin.z) / rayDirection.z;
+        vec3 p = rayOrigin + t * rayDirection - boxHalfSize;
+        float r = sideRadius - topRadius;
+        if (p.x * p.x + p.y * p.y < r*r) {
+            intersectionDist = intersectionDistFormer;
+        }
+    }
     
     // Check for intersection with rounded edge along X axis (cylinder)
     {
         float cylA = directionSquared.y + directionSquared.z;
         float cylB = originCornerDotDir.y + originCornerDotDir.z;
-        float cylC = cornerDistSquared.y + cornerDistSquared.z - radiusSquared;
+        float cylC = cornerDistSquared.y + cornerDistSquared.z - topRadiusSquared;
         float discriminant = cylB * cylB - cylA * cylC;
         if(discriminant > 0.0) {
             float solution = (-cylB - sqrt(discriminant)) / cylA;
@@ -224,7 +247,7 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     {
         float cylA = directionSquared.z + directionSquared.x;
         float cylB = originCornerDotDir.z + originCornerDotDir.x;
-        float cylC = cornerDistSquared.z + cornerDistSquared.x - radiusSquared;
+        float cylC = cornerDistSquared.z + cornerDistSquared.x - topRadiusSquared;
         float discriminant = cylB * cylB - cylA * cylC;
         if(discriminant > 0.0) {
             float solution = (-cylB - sqrt(discriminant)) / cylA;
@@ -235,11 +258,11 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
         }
     }
     
-    // Check for intersection with rounded edge along Z axis (cylinder)
+    // Check for intersection with rounded edge along Z axis (outer larger but shorter cylinder)
     {
         float cylA = directionSquared.x + directionSquared.y;
-        float cylB = originCornerDotDir.x + originCornerDotDir.y;
-        float cylC = cornerDistSquared.x + cornerDistSquared.y - radiusSquared;
+        float cylB = originCornerDotDirZ.x + originCornerDotDirZ.y;
+        float cylC = cornerDistSquaredZ.x + cornerDistSquaredZ.y - sideRadiusSquared;
         float discriminant = cylB * cylB - cylA * cylC;
         if(discriminant > 0.0) {
             float solution = (-cylB - sqrt(discriminant)) / cylA;
@@ -249,6 +272,21 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
             }
         }
     }
+
+
+    // {
+    //     float cylA = directionSquared.x + directionSquared.y;
+    //     float cylB = originCornerDotDirZ.x + originCornerDotDirZ.y;
+    //     float cylC = cornerDistSquaredZ.x + cornerDistSquaredZ.y - sideRadiusSquared;
+    //     float discriminant = cylB * cylB - cylA * cylC;
+    //     if(discriminant > 0.0) {
+    //         float solution = (-cylB - sqrt(discriminant)) / cylA;
+    //         if(solution > 0.0 && solution < intersectionDist && 
+    //            abs(rayOrigin.z + rayDirection.z * solution) < boxHalfSize.z) {
+    //             intersectionDist = solution;
+    //         }
+    //     }
+    // }
     
     // If no valid intersection was found, return -1
     if(intersectionDist > 1e19) intersectionDist = -1.0;
@@ -267,7 +305,7 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape = shapes[i];
         if(shape.size.x < EPSILON) continue;
-        float intersect = roundedboxIntersect(ro - vec3(shape.position, 0.0), rd, shape.size / 2.0 - shape.sideRadius, shape.sideRadius);
+        float intersect = roundedboxIntersect(ro - vec3(shape.position, 0.0), rd, shape.size / 2.0 - vec3(shape.topRadius, shape.sideRadius, shape.topRadius), shape.sideRadius, shape.topRadius);
         if(intersect > 0.0 && intersect.x < dist) {
             dist = intersect.x;
             resultShape = shape;
@@ -347,6 +385,7 @@ void main() {
         
         // Calculate lighting
         vec3 color = calcPhong(p, normal, viewDir, result.shape);
+        color = vec3(p.z) / 100;
         
         fragColor = vec4(color, 1.0);
     } else {
