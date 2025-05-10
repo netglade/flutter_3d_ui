@@ -49,8 +49,8 @@ class MyApp extends StatelessWidget {
                     width: 200,
                     height: 200,
                     child: SpatialContainer(
-                      sideRadius: 100,
-                      topRadius: 40,
+                      sideRadius: 70,
+                      topRadius: 20,
                       elevation: 200,
                       color: Colors.amber,
                       sideColor: Colors.amber,

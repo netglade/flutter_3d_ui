@@ -567,6 +567,7 @@ void main() {
         // Calculate lighting
         vec3 color = calcPhong(p, normal, shiftNormal, viewDir, result.shape);
         // color = vec3(p.z / 100.0);
+        // color = normal;
         
         fragColor = vec4(color, 1.0);
     } else {
