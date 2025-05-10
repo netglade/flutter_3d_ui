@@ -413,8 +413,7 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
 
     // check for torus intersection
     {
-        vec3 adjustedRayOrigin = rayOrigin - vec3(0.0, 0.0, boxHalfSize.z);
-        float solution = torusIntersection(adjustedRayOrigin, rayDirection, vec2(sideRadius - topRadius, topRadius));
+        float solution = torusIntersection(originToCornerZ, rayDirection, vec2(sideRadius - topRadius, topRadius));
         if(solution > 0.0 && solution < intersectionDist) {
             intersectionDist = solution;
         }
