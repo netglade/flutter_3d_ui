@@ -280,8 +280,13 @@ vec3 calcShapeShiftNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     vec3 offset = abs(p) - adjustedDimensions;
     vec3 offsetNonNegative = max(offset, 0.0);
     if (offsetNonNegative.x*offsetNonNegative.x + offsetNonNegative.y*offsetNonNegative.y > sideR*sideR) {
-        offset.z = 0.0;
-        return normalize(offset);
+        vec3 normal;
+        offsetNonNegative.z = 0;
+        float len = length(offsetNonNegative);
+        normal.x = (offsetNonNegative.x / len) * sign(p.x);
+        normal.y = (offsetNonNegative.y / len) * sign(p.y);
+        normal.z = 0;
+        return normal;
     } else {
         return vec3(0.0, 0.0, 1.0);
     }
@@ -511,8 +516,8 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, Shape shape)
 
 
     if (shape.size.x > EPSILON && shiftNormal.z < EPSILON) {
-        p.x += textureSamplingEpsilonAdjusted * shiftNormal.x;
-        p.y += textureSamplingEpsilonAdjusted * shiftNormal.y;
+        p.x -= textureSamplingEpsilonAdjusted * shiftNormal.x;
+        p.y -= textureSamplingEpsilonAdjusted * shiftNormal.y;
     }
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
