@@ -245,8 +245,14 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     vec3 offset = abs(p) - adjustedDimensions;
 
     if(offset.z + EPSILON > 0.0) {
-        offset.x = max(offset.x - (sideR - topR), 0.0);
-        offset.y = max(offset.y - (sideR - topR), 0.0);
+        vec3 offsetFlat = max(vec3(offset.x, offset.y, 0.0), 0.0);
+        if (lengthSquared(offsetFlat) > (sideR - topR) * (sideR - topR)) {
+            offsetFlat = (sideR-topR) * normalize(offsetFlat);
+        }
+        offset = offset - offsetFlat;
+
+        // offset.x = max(offset.x - (sideR - topR), 0.0);
+        // offset.y = max(offset.y - (sideR - topR), 0.0);
     }
 
     vec3 offsetNonNegative = max(offset, 0.0);
@@ -560,7 +566,7 @@ void main() {
         
         // Calculate lighting
         vec3 color = calcPhong(p, normal, shiftNormal, viewDir, result.shape);
-        // color = vec3(p.z);
+        // color = vec3(p.z / 100.0);
         
         fragColor = vec4(color, 1.0);
     } else {
