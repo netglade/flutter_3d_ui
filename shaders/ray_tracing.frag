@@ -38,6 +38,7 @@ out vec4 fragColor;
 const int MAX_STEPS = 60;
 const float MAX_DIST = 10000.0;
 const float EPSILON = 0.1;
+const float textureSamplingEpsilon = 2.0;
 
 // Light properties
 const vec3 lightPos = vec3(1000, -1000, 1000);
@@ -272,6 +273,51 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     return normal;
 }
 
+vec3 calcShapeShiftNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
+    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, 0.0)
+        - vec3(textureSamplingEpsilon, textureSamplingEpsilon, 0.0);
+    
+    vec3 offset = abs(p) - adjustedDimensions;
+    vec3 offsetNonNegative = max(offset, 0.0);
+    if (offsetNonNegative.x*offsetNonNegative.x + offsetNonNegative.y*offsetNonNegative.y > sideR*sideR) {
+        offset.z = 0.0;
+        return normalize(offset);
+    } else {
+        return vec3(0.0, 0.0, 1.0);
+    }
+
+
+    // // If we're completely inside, find closest faces
+    // if(lengthSquared(offsetNonNegative) <= EPSILON) {
+    //     vec3 closest = vec3(0.0, 0.0, 0.0);
+    //     if(offset.z + EPSILON*2 >= offset.x && offset.z + EPSILON > offset.y) {
+    //         closest.z = sign(p.z);
+    //     } else if(offset.y + EPSILON >= offset.x) {
+    //         closest.y = sign(p.y);
+    //     } else {
+    //         closest.x = sign(p.x);
+    //     }
+    //     return closest;
+    // }
+    
+    // // Apply signs to the normalized offset
+    // vec3 normal;
+    // float len = length(offsetNonNegative);
+    // normal.x = (offsetNonNegative.x / len) * sign(p.x);
+    // normal.y = (offsetNonNegative.y / len) * sign(p.y);
+    // normal.z = (offsetNonNegative.z / len) * sign(p.z);
+    // return normal;
+}
+
+
+vec3 calcShiftNormal(vec3 p, Shape shape) {
+    if (shape.size.x < EPSILON) {
+        return vec3(0.0, 0.0, 1.0);
+    }
+
+    return calcShapeShiftNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
+}
+
 // Calculate normal using central differences
 vec3 calcNormal(vec3 p, Shape shape) {
     if (shape.size.x < EPSILON) {
@@ -447,7 +493,7 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
 }
 
 // Calculate Phong lighting
-vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
+vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, Shape shape) {
     // Ambient
     vec3 ambient = ambientStrength * lightColor;
     
@@ -461,22 +507,12 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 viewDir, Shape shape) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
-    float textureSamplingEpsilon = 2.0;
+    float textureSamplingEpsilonAdjusted = textureSamplingEpsilon * 1.2;
 
-    if (normal.z < EPSILON * 10 && shape.size.x > EPSILON) {
-        p -= normal * textureSamplingEpsilon;
-    }
-    else
-     if (shape.size.x > EPSILON) {
-        vec2 shifted = p.xy - shape.position;
-        vec2 difference = (abs(shifted) - shape.size.xy / 2.0);
 
-        if (abs(difference.x) < textureSamplingEpsilon) {
-            p.x -= textureSamplingEpsilon * sign(shifted.x);
-        }
-        if (abs(difference.y) < textureSamplingEpsilon) {
-            p.y -= textureSamplingEpsilon * sign(shifted.y);
-        }
+    if (shape.size.x > EPSILON && shiftNormal.z < EPSILON) {
+        p.x += textureSamplingEpsilonAdjusted * shiftNormal.x;
+        p.y += textureSamplingEpsilonAdjusted * shiftNormal.y;
     }
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
@@ -512,11 +548,13 @@ void main() {
         
         // Calculate normal and view direction
         vec3 normal = calcNormal(p, result.shape);  
+        vec3 shiftNormal = calcShiftNormal(p, result.shape);
+
         // normal = vec3(0.0, 0.0, 1.0);
         vec3 viewDir = normalize(ro - p);
         
         // Calculate lighting
-        vec3 color = calcPhong(p, normal, viewDir, result.shape);
+        vec3 color = calcPhong(p, normal, shiftNormal, viewDir, result.shape);
         // color = vec3(p.z);
         
         fragColor = vec4(color, 1.0);
