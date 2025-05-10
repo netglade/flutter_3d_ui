@@ -48,6 +48,152 @@ const float shininess = 32.0;
 const vec3 skyColor = vec3(0.9, 0.1, 1.0);
 const vec3 backgroundColor = vec3(0.0, 0.0, 0.0);
 
+/**
+ * Calculates the intersection of a ray with a torus
+ * 
+ * @param rayOrigin Origin point of the ray
+ * @param rayDirection Direction vector of the ray
+ * @param torusRadii Vector where x = major radius (distance from center to tube center),
+ *                  y = minor radius (radius of the tube itself)
+ * 
+ * @return Distance to intersection point, or -1 if no intersection exists
+ */
+float torusIntersection(in vec3 rayOrigin, in vec3 rayDirection, in vec2 torusRadii)
+{
+    // Flag indicating which form of the polynomial solution to use
+    float polynomialForm = 1.0;
+    
+    // Square of the torus radii for more efficient calculations
+    float majorRadiusSquared = torusRadii.x * torusRadii.x;
+    float minorRadiusSquared = torusRadii.y * torusRadii.y;
+    
+    // Precompute dot products needed for the quartic equation
+    float rayOriginDotProduct = dot(rayOrigin, rayOrigin);
+    float rayOriginDirectionDotProduct = dot(rayOrigin, rayDirection);
+    
+    // Compute coefficients for the quartic equation
+    float constTerm = (rayOriginDotProduct + majorRadiusSquared - minorRadiusSquared) / 2.0;
+    float cubicCoeff = rayOriginDirectionDotProduct;
+    float quadraticCoeff = rayOriginDirectionDotProduct * rayOriginDirectionDotProduct - 
+                          majorRadiusSquared * dot(rayDirection.xy, rayDirection.xy) + constTerm;
+    float linearCoeff = rayOriginDirectionDotProduct * constTerm - 
+                        majorRadiusSquared * dot(rayDirection.xy, rayOrigin.xy);
+    float quarticCoeff = constTerm * constTerm - 
+                         majorRadiusSquared * dot(rayOrigin.xy, rayOrigin.xy);
+    
+    // Check if we need to switch to inverse form of the polynomial for numerical stability
+    if (abs(cubicCoeff * (cubicCoeff * cubicCoeff - quadraticCoeff) + linearCoeff) < 0.01)
+    {
+        polynomialForm = -1.0;
+        
+        // Swap coefficients for inverse polynomial form
+        float tmp = linearCoeff; linearCoeff = cubicCoeff; cubicCoeff = tmp;
+        
+        // Invert and normalize all coefficients
+        quarticCoeff = 1.0 / quarticCoeff;
+        linearCoeff = linearCoeff * quarticCoeff;
+        quadraticCoeff = quadraticCoeff * quarticCoeff;
+        cubicCoeff = cubicCoeff * quarticCoeff;
+    }
+    
+    // Ferrari's method for solving quartic equation by reducing to cubic
+    // Compute coefficients for the resolvent cubic equation
+    float derivedQuadCoeff = quadraticCoeff * 2.0 - 3.0 * cubicCoeff * cubicCoeff;
+    float derivedLinearCoeff = cubicCoeff * (cubicCoeff * cubicCoeff - quadraticCoeff) + linearCoeff;
+    float derivedConstCoeff = cubicCoeff * (cubicCoeff * (derivedQuadCoeff + 2.0 * quadraticCoeff) - 
+                              8.0 * linearCoeff) + 4.0 * quarticCoeff;
+    
+    // Normalize coefficients
+    derivedQuadCoeff /= 3.0;
+    derivedLinearCoeff *= 2.0;
+    derivedConstCoeff /= 3.0;
+    
+    // Compute discriminants for the cubic formula
+    float discriminantQ = derivedQuadCoeff * derivedQuadCoeff + derivedConstCoeff;
+    float discriminantR = derivedQuadCoeff * derivedQuadCoeff * derivedQuadCoeff - 
+                         3.0 * derivedQuadCoeff * derivedConstCoeff + 
+                         derivedLinearCoeff * derivedLinearCoeff;
+    float discriminantH = discriminantR * discriminantR - discriminantQ * discriminantQ * discriminantQ;
+    
+    // Case 1: Cubic has one real root and two complex conjugate roots
+    if (discriminantH >= 0.0)  
+    {
+        discriminantH = sqrt(discriminantH);
+        
+        // Calculate cube roots for the real root
+        float cubeRootRPlusH = sign(discriminantR + discriminantH) * 
+                              pow(abs(discriminantR + discriminantH), 1.0/3.0);
+        float cubeRootRMinusH = sign(discriminantR - discriminantH) * 
+                               pow(abs(discriminantR - discriminantH), 1.0/3.0);
+        
+        // Compute the real root of the cubic
+        vec2 solutionVector = vec2((cubeRootRPlusH + cubeRootRMinusH) + 4.0 * derivedQuadCoeff, 
+                                  (cubeRootRPlusH - cubeRootRMinusH) * sqrt(3.0));
+        float solutionY = sqrt(0.5 * (length(solutionVector) + solutionVector.x));
+        float solutionX = 0.5 * solutionVector.y / solutionY;
+        
+        // Use the real root to find roots of the quartic
+        float correctionTerm = 2.0 * derivedLinearCoeff / (solutionX * solutionX + solutionY * solutionY);
+        
+        // Calculate possible intersection distances
+        float intersectionDist1 = solutionX - correctionTerm - cubicCoeff;
+        intersectionDist1 = (polynomialForm < 0.0) ? 2.0 / intersectionDist1 : intersectionDist1;
+        
+        float intersectionDist2 = -solutionX - correctionTerm - cubicCoeff;
+        intersectionDist2 = (polynomialForm < 0.0) ? 2.0 / intersectionDist2 : intersectionDist2;
+        
+        // Find the closest positive intersection
+        float closestIntersection = 1e20; // Initialize to a large value
+        if (intersectionDist1 > 0.0) closestIntersection = intersectionDist1;
+        if (intersectionDist2 > 0.0) closestIntersection = min(closestIntersection, intersectionDist2);
+        
+        return closestIntersection;
+    }
+    
+    // Case 2: Cubic has three real roots
+    float sqrtDiscriminantQ = sqrt(discriminantQ);
+    
+    // Use trigonometric solution for the cubic equation
+    float trigSolution = sqrtDiscriminantQ * 
+                        cos(acos(-discriminantR / (sqrtDiscriminantQ * discriminantQ)) / 3.0);
+    
+    // Compute variables needed for the quartic roots
+    float discriminantD2 = -(trigSolution + derivedQuadCoeff);
+    
+    // If discriminant is negative, no real roots exist (no intersection)
+    if (discriminantD2 < 0.0) return -1.0;
+    
+    float sqrtDiscriminantD2 = sqrt(discriminantD2);
+    
+    // Calculate radicals for the quartic formula
+    float solutionRadicalH1 = sqrt(trigSolution - 2.0 * derivedQuadCoeff + 
+                                  derivedLinearCoeff / sqrtDiscriminantD2);
+    float solutionRadicalH2 = sqrt(trigSolution - 2.0 * derivedQuadCoeff - 
+                                  derivedLinearCoeff / sqrtDiscriminantD2);
+    
+    // Calculate all four possible intersection distances
+    float intersectionDist1 = -sqrtDiscriminantD2 - solutionRadicalH1 - cubicCoeff;
+    intersectionDist1 = (polynomialForm < 0.0) ? 2.0 / intersectionDist1 : intersectionDist1;
+    
+    float intersectionDist2 = -sqrtDiscriminantD2 + solutionRadicalH1 - cubicCoeff;
+    intersectionDist2 = (polynomialForm < 0.0) ? 2.0 / intersectionDist2 : intersectionDist2;
+    
+    float intersectionDist3 = sqrtDiscriminantD2 - solutionRadicalH2 - cubicCoeff;
+    intersectionDist3 = (polynomialForm < 0.0) ? 2.0 / intersectionDist3 : intersectionDist3;
+    
+    float intersectionDist4 = sqrtDiscriminantD2 + solutionRadicalH2 - cubicCoeff;
+    intersectionDist4 = (polynomialForm < 0.0) ? 2.0 / intersectionDist4 : intersectionDist4;
+    
+    // Find the closest positive intersection
+    float closestIntersection = 1e20; // Initialize to a large value
+    if (intersectionDist1 > 0.0) closestIntersection = intersectionDist1;
+    if (intersectionDist2 > 0.0) closestIntersection = min(closestIntersection, intersectionDist2);
+    if (intersectionDist3 > 0.0) closestIntersection = min(closestIntersection, intersectionDist3);
+    if (intersectionDist4 > 0.0) closestIntersection = min(closestIntersection, intersectionDist4);
+    
+    return closestIntersection;
+}
+
 // Function to construct a Shape struct from the flat array
 void constructShapes() {
     for(int i = 0; i < MAX_SHAPES; i++) {
@@ -208,14 +354,6 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     float topRadiusSquared = topRadius * topRadius;        // Squared radius
     float sideRadiusSquared = sideRadius * sideRadius;  // Squared corner radius
     intersectionDist = 1e20;                                  // Reset intersectionDist to a very large value
-    
-    // // Check for intersection with rounded corner (sphere)
-    // {
-    //     float sphereB = originCornerDotDir.x + originCornerDotDir.y + originCornerDotDir.z;
-    //     float sphereC = cornerDistSquared.x + cornerDistSquared.y + cornerDistSquared.z - radiusSquared;
-    //     float discriminant = sphereB * sphereB - sphereC;
-    //     if(discriminant > 0.0) intersectionDist = -sphereB - sqrt(discriminant);  // Quadratic formula solution
-    // }
 
     // Check for intersection with rounded edge along Z axis (inner smaller but taller cylinder)
     {
@@ -273,20 +411,14 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
         }
     }
 
-
-    // {
-    //     float cylA = directionSquared.x + directionSquared.y;
-    //     float cylB = originCornerDotDirZ.x + originCornerDotDirZ.y;
-    //     float cylC = cornerDistSquaredZ.x + cornerDistSquaredZ.y - sideRadiusSquared;
-    //     float discriminant = cylB * cylB - cylA * cylC;
-    //     if(discriminant > 0.0) {
-    //         float solution = (-cylB - sqrt(discriminant)) / cylA;
-    //         if(solution > 0.0 && solution < intersectionDist && 
-    //            abs(rayOrigin.z + rayDirection.z * solution) < boxHalfSize.z) {
-    //             intersectionDist = solution;
-    //         }
-    //     }
-    // }
+    // check for torus intersection
+    {
+        vec3 adjustedRayOrigin = rayOrigin - vec3(0.0, 0.0, boxHalfSize.z);
+        float solution = torusIntersection(adjustedRayOrigin, rayDirection, vec2(sideRadius - topRadius, topRadius));
+        if(solution > 0.0 && solution < intersectionDist) {
+            intersectionDist = solution;
+        }
+    }
     
     // If no valid intersection was found, return -1
     if(intersectionDist > 1e19) intersectionDist = -1.0;
