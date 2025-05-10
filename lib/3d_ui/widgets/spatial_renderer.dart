@@ -102,7 +102,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
           if (_shader == null) {
             return const CircularProgressIndicator();
           }
-
+  
           return ChangeNotifierProvider.value(
               value: _provider,
               child: LayoutBuilder(builder: (context, constraints) {
@@ -110,6 +110,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                 _shader!.setFloat(1, constraints.maxHeight);
 
                 return AnimatedSampler(
+                  enabled: true,
                   (image, size, canvas) {
                     _shader!.setImageSampler(0, image);
                     _setShaderUniforms();

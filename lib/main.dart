@@ -43,14 +43,14 @@ class MyApp extends StatelessWidget {
                 children: List.generate(
               4,
               (i) => Center(
-                child: SizedBox(
-                  width: 300,
-                  height: 200,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: SizedBox(
+                    width: 200,
+                    height: 200,
                     child: SpatialContainer(
-                      sideRadius: 40,
-                      topRadius: 10,
+                      sideRadius: 100,
+                      topRadius: 0,
                       elevation: 200,
                       color: Colors.amber,
                       sideColor: Colors.amber,

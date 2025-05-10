@@ -244,8 +244,8 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     vec3 offset = abs(p) - adjustedDimensions;
 
     if(offset.z + EPSILON > 0.0) {
-        offset.x = offset.x > 0 ? max(offset.x - (sideR - topR), 0.0) : offset.x;
-        offset.y = offset.y > 0 ? max(offset.y - (sideR - topR), 0.0) : offset.y;
+        offset.x = max(offset.x - (sideR - topR), 0.0);
+        offset.y = max(offset.y - (sideR - topR), 0.0);
     }
 
     vec3 offsetNonNegative = max(offset, 0.0);
@@ -436,7 +436,7 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape = shapes[i];
         if(shape.size.x < EPSILON) continue;
-        float intersect = roundedboxIntersect(ro - vec3(shape.position, 0.0), rd, shape.size / 2.0 - vec3(shape.topRadius, shape.sideRadius, shape.topRadius), shape.sideRadius, shape.topRadius);
+        float intersect = roundedboxIntersect(ro - vec3(shape.position, 0.0), rd, shape.size / 2.0 - vec3(shape.sideRadius, shape.sideRadius, shape.topRadius), shape.sideRadius, shape.topRadius);
         if(intersect > 0.0 && intersect.x < dist) {
             dist = intersect.x;
             resultShape = shape;
@@ -512,11 +512,12 @@ void main() {
         
         // Calculate normal and view direction
         vec3 normal = calcNormal(p, result.shape);  
+        // normal = vec3(0.0, 0.0, 1.0);
         vec3 viewDir = normalize(ro - p);
         
         // Calculate lighting
         vec3 color = calcPhong(p, normal, viewDir, result.shape);
-        color = vec3(p.z) / 100;
+        // color = vec3(p.z);
         
         fragColor = vec4(color, 1.0);
     } else {
