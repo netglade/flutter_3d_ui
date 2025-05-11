@@ -49,6 +49,15 @@ const float shininess = 32.0;
 const vec3 skyColor = vec3(0.9, 0.7, .0);
 const vec3 backgroundColor = vec3(1.0, 1.0, 1.0);
 
+// Color space conversion functions
+vec3 linearToSRGB(vec3 color) {
+    return pow(color, vec3(1.0/2.2));
+}
+
+vec3 sRGBToLinear(vec3 color) {
+    return pow(color, vec3(2.2));
+}
+
 /**
  * Calculates the intersection of a ray with a torus
  * 
@@ -204,7 +213,7 @@ void constructShapes() {
         shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]);
         shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5];
         shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6];
-        shape.sideColor = vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]);
+        shape.sideColor = sRGBToLinear(vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]));
         shape.metallic = shapesInput[i * SHAPE_STRIDE + 10];
         shape.roughness = shapesInput[i * SHAPE_STRIDE + 11]; 
         shape.reflectance = shapesInput[i * SHAPE_STRIDE + 12];
@@ -534,7 +543,7 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, Shape shape)
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
         color = shape.sideColor;
     else
-        color = texture(uTexture, textureUv).rgb;
+        color = sRGBToLinear(texture(uTexture, textureUv).rgb);
 
     return (ambient + diffuse + specular) * color;
 }
@@ -569,9 +578,9 @@ void main() {
         // color = vec3(p.z / 100.0);
         // color = normal;
         
-        fragColor = vec4(color, 1.0);
+        fragColor = vec4(linearToSRGB(color), 1.0);
     } else {
         // Background color
-        fragColor = vec4(skyColor, 1.0);
+        fragColor = vec4(linearToSRGB(skyColor), 1.0);
     }
 }

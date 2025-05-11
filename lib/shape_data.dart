@@ -24,12 +24,12 @@ class ShapeData {
   // Convert to float array for uniform buffer
   List<double> getData() {
     return [
-      x, y,                    // position (vec2)
-      width, height,           // size (vec3)
+      x, y, // position (vec2)
+      width, height, // size (vec3)
       elevation,
-      sideRadius,             // sideRadius (float)
-      topRadius,              // topRadius (float)
-      sideColor.r,  // sideColor (vec3)
+      sideRadius, // sideRadius (float)
+      topRadius, // topRadius (float)
+      sideColor.r, // sideColor (vec3)
       sideColor.g,
       sideColor.b,
     ];
