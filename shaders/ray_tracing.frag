@@ -16,6 +16,7 @@ uniform vec3 backgroundColor;
 uniform vec3 lightDirection;
 uniform float cameraHeight;
 uniform vec3 rayDirectionParameter;
+uniform float indirectLightCoefficient;
 
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
@@ -517,20 +518,55 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
     return SdfResult(dist, resultShape);    
 }
 
-// Calculate Phong lighting
-vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalizedLightDir, Shape shape) {
-    // Ambient
-    vec3 ambient = ambientStrength * lightColor;
-    
-    // Diffuse
-    float diff = max(dot(normal, -normalizedLightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-    
-    // Specular
-    vec3 reflectDir = reflect(-normalizedLightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    vec3 specular = specularStrength * spec * lightColor;
-    
+const float PI = 3.14159265359;
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+// Calculate PBR lighting
+vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalizedLightDir, Shape shape) {
+    vec3 N = normal;
+    vec3 V = viewDir;
+    vec3 L = -normalizedLightDir;
+    vec3 H = normalize(V + L);
+
     float textureSamplingEpsilonAdjusted = textureSamplingEpsilon * 1.2;
 
     if (shape.size.x > EPSILON && shiftNormal.z < EPSILON) {
@@ -540,15 +576,39 @@ vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normali
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
 
-    vec3 color = backgroundColor;
+    vec3 albedo = backgroundColor;
     if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
-        color = backgroundColor;
+        albedo = backgroundColor;
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
-        color = shape.sideColor;
+        albedo = shape.sideColor;
     else
-        color = sRGBToLinear(texture(uTexture, textureUv).rgb);
+        albedo = sRGBToLinear(texture(uTexture, textureUv).rgb);
 
-    return (ambient + diffuse + specular) * color;
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedo, shape.metallic);
+
+    // Cook-Torrance BRDF
+    float NDF = DistributionGGX(N, H, shape.roughness);
+    float G = GeometrySmith(N, V, L, shape.roughness);
+    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - shape.metallic;
+
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular = numerator / denominator;
+
+    float NdotL = max(dot(N, L), 0.0);
+    vec3 radiance = lightColor * lightIntensity;
+    vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+
+    vec3 ambient = vec3(indirectLightCoefficient) * albedo;
+    vec3 color = ambient + Lo;
+
+    color = color / (color + vec3(1.0));
+    return color;
 }
 
 float[5] array;
@@ -575,11 +635,10 @@ void main() {
         // Calculate normal and view direction
         vec3 normal = calcNormal(p, result.shape);  
         vec3 shiftNormal = calcShiftNormal(p, result.shape);
-
         vec3 viewDir = normalize(ro - p);
         
-        // Calculate lighting
-        vec3 color = calcPhong(p, normal, shiftNormal, viewDir, normalizedLightDir, result.shape);
+        // Calculate lighting using PBR
+        vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, result.shape);
         
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {

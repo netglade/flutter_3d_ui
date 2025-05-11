@@ -14,6 +14,7 @@ class SpatialRenderer extends StatefulWidget {
   final Vector3 lightDirection;
   final double cameraHeight;
   final Vector3 rayDirection;
+  final double indirectLightCoefficient;
 
   /// Creates a 3D renderer for the given [child] widget.
   ///
@@ -27,16 +28,18 @@ class SpatialRenderer extends StatefulWidget {
   /// The [lightDirection] should point downward with a negative z component.
   /// The [cameraHeight] sets how far above the scene the camera is positioned.
   /// The [rayDirection] determines the camera's viewing direction.
+  /// The [indirectLightCoefficient] controls the strength of ambient/indirect lighting.
   SpatialRenderer({
     Key? key,
     required this.child,
     this.lightColor = const Color(0xFFFFFFFF),
-    this.lightIntensity = 100000.0,
+    this.lightIntensity = 20.0,
     this.skyColor = const Color(0xFFE6B300),
     this.backgroundColor = const Color(0xFFFFFFFF),
-    this.lightDirection = const Vector3(0.2, -0.2, -1.0),
+    this.lightDirection = const Vector3(0.2, 0.2, -1.0),
     this.cameraHeight = 500.0,
     this.rayDirection = const Vector3(0.1, 0.1, -1.0),
+    this.indirectLightCoefficient = 0.1,
   }) : super(key: key);
 
   @override
@@ -84,6 +87,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     _shader!.setFloat(16, widget.rayDirection.x);
     _shader!.setFloat(17, widget.rayDirection.y);
     _shader!.setFloat(18, widget.rayDirection.z);
+    _shader!.setFloat(19, widget.indirectLightCoefficient);
 
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
@@ -141,7 +145,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
-    }, initialIndex: 19);
+    }, initialIndex: 20);
   }
 
   Future<void> _loadShader() async {

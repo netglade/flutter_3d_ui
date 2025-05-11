@@ -39,7 +39,7 @@ class SpatialContainer extends StatefulWidget {
     this.color,
     required this.sideColor,
     this.metallic = 0.0,
-    this.roughness = 0.0,
+    this.roughness = 1.0,
     this.reflectance = 0.5,
   }) : super(key: key);
 
