@@ -17,6 +17,9 @@ uniform vec3 lightDirection;
 uniform float cameraHeight;
 uniform vec3 rayDirectionParameter;
 uniform float indirectLightCoefficient;
+uniform float backgroundRoughness;
+uniform float backgroundMetallic;
+uniform float backgroundReflectance;
 
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
@@ -643,8 +646,23 @@ void main() {
         vec3 shiftNormal = calcShiftNormal(p, result.shape);
         vec3 viewDir = normalize(ro - p);
         
+        // Create background shape if needed
+        Shape finalShape = result.shape;
+        if (result.shape.size.x <= EPSILON) {
+            finalShape = Shape(
+                vec2(0.0, 0.0),
+                vec3(0.0, 0.0, 0.0),
+                0.0,
+                0.0,
+                backgroundColor,
+                backgroundMetallic,
+                backgroundRoughness,
+                backgroundReflectance
+            );
+        }
+        
         // Calculate lighting using PBR
-        vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, result.shape);
+        vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, finalShape);
         
         // Apply tonemapping
         color = tonemap(color);

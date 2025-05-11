@@ -15,6 +15,9 @@ class SpatialRenderer extends StatefulWidget {
   final double cameraHeight;
   final Vector3 rayDirection;
   final double indirectLightStrength;
+  final double backgroundRoughness;
+  final double backgroundMetallic;
+  final double backgroundReflectance;
 
   /// Creates a 3D renderer for the given [child] widget.
   ///
@@ -29,6 +32,9 @@ class SpatialRenderer extends StatefulWidget {
   /// The [cameraHeight] sets how far above the scene the camera is positioned.
   /// The [rayDirection] determines the camera's viewing direction.
   /// The [indirectLightStrength] controls the strength of ambient/indirect lighting.
+  /// The [backgroundRoughness] sets the roughness of the background material.
+  /// The [backgroundMetallic] sets the metallic property of the background material.
+  /// The [backgroundReflectance] sets the reflectance of the background material.
   SpatialRenderer({
     Key? key,
     required this.child,
@@ -40,6 +46,9 @@ class SpatialRenderer extends StatefulWidget {
     this.cameraHeight = 500.0,
     this.rayDirection = const Vector3(0.1, 0.1, -1.0),
     this.indirectLightStrength = 0.1,
+    this.backgroundRoughness = 1.0,
+    this.backgroundMetallic = 0.0,
+    this.backgroundReflectance = 0.5,
   }) : super(key: key);
 
   @override
@@ -88,6 +97,9 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     _shader!.setFloat(17, widget.rayDirection.y);
     _shader!.setFloat(18, widget.rayDirection.z);
     _shader!.setFloat(19, widget.indirectLightStrength);
+    _shader!.setFloat(20, widget.backgroundRoughness);
+    _shader!.setFloat(21, widget.backgroundMetallic);
+    _shader!.setFloat(22, widget.backgroundReflectance);
 
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
@@ -145,7 +157,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
-    }, initialIndex: 20);
+    }, initialIndex: 23);
   }
 
   Future<void> _loadShader() async {
