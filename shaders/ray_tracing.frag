@@ -560,6 +560,11 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+vec3 tonemap(vec3 color) {
+    // Reinhard tonemapping
+    return color / (color + vec3(1.0));
+}
+
 // Calculate PBR lighting
 vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalizedLightDir, Shape shape) {
     vec3 N = normal;
@@ -584,12 +589,16 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     else
         albedo = sRGBToLinear(texture(uTexture, textureUv).rgb);
 
-    vec3 F0 = vec3(0.04);
+    // Calculate base F0 using reflectance
+    vec3 F0 = vec3(0.16 * shape.reflectance * shape.reflectance);
     F0 = mix(F0, albedo, shape.metallic);
 
+    // Calculate actual roughness (roughness squared)
+    float actualRoughness = shape.roughness * shape.roughness;
+
     // Cook-Torrance BRDF
-    float NDF = DistributionGGX(N, H, shape.roughness);
-    float G = GeometrySmith(N, V, L, shape.roughness);
+    float NDF = DistributionGGX(N, H, actualRoughness);
+    float G = GeometrySmith(N, V, L, actualRoughness);
     vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
     vec3 kS = F;
@@ -605,10 +614,7 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
 
     vec3 ambient = vec3(indirectLightCoefficient) * albedo;
-    vec3 color = ambient + Lo;
-
-    color = color / (color + vec3(1.0));
-    return color;
+    return ambient + Lo;
 }
 
 float[5] array;
@@ -639,6 +645,9 @@ void main() {
         
         // Calculate lighting using PBR
         vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, result.shape);
+        
+        // Apply tonemapping
+        color = tonemap(color);
         
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {

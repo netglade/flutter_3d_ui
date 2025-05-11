@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
                       width: 200,
                       height: 200,
                       child: SpatialContainer(
+                        roughness: i % 2 == 0 ? 1.0 : 0.1,
                         sideRadius: 70,
                         topRadius: 20,
                         elevation: 200,
