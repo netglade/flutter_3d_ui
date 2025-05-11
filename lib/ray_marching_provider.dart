@@ -52,16 +52,16 @@ class RayMarchingProvider extends StatelessWidget {
                 shader.setFloat(1, constraints.maxHeight);
 
                 final uniformData = List<double>.filled(
-                    shapes.length * ShapeData.stride, 0, growable: false);
+                    shapes.length * ShapeData.stride, 0,
+                    growable: false);
                 for (var i = 0; i < shapes.length; i++) {
                   final shapeData = shapes[i].getData();
                   uniformData.setAll(i * ShapeData.stride, shapeData);
                 }
 
                 shader.setFloatUniforms((setter) {
-                    setter.setFloats(uniformData);
-                  }, initialIndex: 2);
-
+                  setter.setFloats(uniformData);
+                }, initialIndex: 2);
 
                 return AnimatedSampler(
                   (image, size, canvas) {

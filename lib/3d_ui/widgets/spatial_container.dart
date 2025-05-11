@@ -14,6 +14,22 @@ class SpatialContainer extends StatefulWidget {
   final double roughness;
   final double reflectance;
 
+  /// Creates a container that renders its [child] in 3D space with lighting and shadows.
+  ///
+  /// The container uses PBR (Physically Based Rendering) for realistic materials.
+  /// Material properties are controlled by [metallic], [roughness], and [reflectance].
+  /// For detailed information about these properties, see the [Filament Material Properties Guide](https://google.github.io/filament/Material%20Properties.pdf).
+  ///
+  /// The [color] parameter sets the main color of the container, similar to a normal
+  /// Flutter container's color. The [sideColor] parameter sets the color of the vertical
+  /// sides of the container that are perpendicular to the display plane.
+  ///
+  /// The [sideRadius] works like a normal Flutter container's borderRadius - it rounds
+  /// the corners of the container's base. The [topRadius] controls the rounding of the
+  /// top edges, which is useful for creating rounded-top buttons or cards.
+  ///
+  /// The [elevation] determines how many pixels high the container appears to be
+  /// raised from the background.
   const SpatialContainer({
     required this.child,
     Key? key,

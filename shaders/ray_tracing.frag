@@ -8,6 +8,15 @@ const int MAX_SHAPES = 5;
 uniform sampler2D uTexture;
 uniform vec2 resolution;
 
+// Light and camera uniforms
+uniform vec3 lightColor;
+uniform float lightIntensity;
+uniform vec3 skyColor;
+uniform vec3 backgroundColor;
+uniform vec3 lightDirection;
+uniform float cameraHeight;
+uniform vec3 rayDirectionParameter;
+
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
     vec3 size; // width, height, elevation
@@ -41,13 +50,9 @@ const float EPSILON = 0.1;
 const float textureSamplingEpsilon = 2.0;
 
 // Light properties
-const vec3 lightPos = vec3(1000, -1000, 1000);
-const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float ambientStrength = 0.2;
 const float specularStrength = 0.4;
 const float shininess = 32.0;
-const vec3 skyColor = vec3(0.9, 0.7, .0);
-const vec3 backgroundColor = vec3(1.0, 1.0, 1.0);
 
 // Color space conversion functions
 vec3 linearToSRGB(vec3 color) {
@@ -513,22 +518,20 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
 }
 
 // Calculate Phong lighting
-vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, Shape shape) {
+vec3 calcPhong(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalizedLightDir, Shape shape) {
     // Ambient
     vec3 ambient = ambientStrength * lightColor;
     
     // Diffuse
-    vec3 lightDir = normalize(lightPos - p);
-    float diff = max(dot(normal, lightDir), 0.0);
+    float diff = max(dot(normal, -normalizedLightDir), 0.0);
     vec3 diffuse = diff * lightColor;
     
     // Specular
-    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 reflectDir = reflect(-normalizedLightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * lightColor;
     
     float textureSamplingEpsilonAdjusted = textureSamplingEpsilon * 1.2;
-
 
     if (shape.size.x > EPSILON && shiftNormal.z < EPSILON) {
         p.x -= textureSamplingEpsilonAdjusted * shiftNormal.x;
@@ -555,9 +558,12 @@ void main() {
     vec2 uv = FlutterFragCoord().xy;
     constructShapes();
     
+    // Normalize light direction once
+    vec3 normalizedLightDir = normalize(lightDirection);
+    
     // Camera setup
-    vec3 ro = vec3(uv, 500);  // Ray origin (camera position)
-    vec3 rd = normalize(vec3(0.1, 0.1, -1.0));  // Ray direction
+    vec3 ro = vec3(uv, cameraHeight);  // Ray origin (camera position)
+    vec3 rd = normalize(rayDirectionParameter);  // Ray direction
 
     // Ray march
     SdfResult result = rayTrace(ro, rd);
@@ -570,13 +576,10 @@ void main() {
         vec3 normal = calcNormal(p, result.shape);  
         vec3 shiftNormal = calcShiftNormal(p, result.shape);
 
-        // normal = vec3(0.0, 0.0, 1.0);
         vec3 viewDir = normalize(ro - p);
         
         // Calculate lighting
-        vec3 color = calcPhong(p, normal, shiftNormal, viewDir, result.shape);
-        // color = vec3(p.z / 100.0);
-        // color = normal;
+        vec3 color = calcPhong(p, normal, shiftNormal, viewDir, normalizedLightDir, result.shape);
         
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {

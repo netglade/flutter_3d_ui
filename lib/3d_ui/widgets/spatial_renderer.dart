@@ -7,11 +7,48 @@ import 'package:provider/provider.dart';
 
 class SpatialRenderer extends StatefulWidget {
   final Widget child;
+  final Color lightColor;
+  final double lightIntensity;
+  final Color skyColor;
+  final Color backgroundColor;
+  final Vector3 lightDirection;
+  final double cameraHeight;
+  final Vector3 rayDirection;
 
-  SpatialRenderer({Key? key, required this.child}) : super(key: key);
+  /// Creates a 3D renderer for the given [child] widget.
+  ///
+  /// The renderer uses ray tracing to create realistic lighting and shadows.
+  /// The scene is viewed from an orthographic camera positioned above the scene.
+  /// The background is at z=0, and shapes extend upward based on their elevation.
+  ///
+  /// The [lightColor] determines the color of the light source.
+  /// The [lightIntensity] sets the strength of the light in lux.
+  /// The [skyColor] and [backgroundColor] define the scene's background colors.
+  /// The [lightDirection] should point downward with a negative z component.
+  /// The [cameraHeight] sets how far above the scene the camera is positioned.
+  /// The [rayDirection] determines the camera's viewing direction.
+  SpatialRenderer({
+    Key? key,
+    required this.child,
+    this.lightColor = const Color(0xFFFFFFFF),
+    this.lightIntensity = 100000.0,
+    this.skyColor = const Color(0xFFE6B300),
+    this.backgroundColor = const Color(0xFFFFFFFF),
+    this.lightDirection = const Vector3(0.2, -0.2, -1.0),
+    this.cameraHeight = 500.0,
+    this.rayDirection = const Vector3(0.1, 0.1, -1.0),
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SpatialRendererState();
+}
+
+class Vector3 {
+  final double x;
+  final double y;
+  final double z;
+
+  const Vector3(this.x, this.y, this.z);
 }
 
 class _SpatialRendererState extends State<SpatialRenderer> {
@@ -28,6 +65,25 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     final currentOffset = (context.findRenderObject() as RenderBox?)
             ?.localToGlobal(Offset.zero) ??
         Offset.zero;
+
+    // Set light and camera uniforms
+    _shader!.setFloat(2, widget.lightColor.r);
+    _shader!.setFloat(3, widget.lightColor.g);
+    _shader!.setFloat(4, widget.lightColor.b);
+    _shader!.setFloat(5, widget.lightIntensity);
+    _shader!.setFloat(6, widget.skyColor.r);
+    _shader!.setFloat(7, widget.skyColor.g);
+    _shader!.setFloat(8, widget.skyColor.b);
+    _shader!.setFloat(9, widget.backgroundColor.r);
+    _shader!.setFloat(10, widget.backgroundColor.g);
+    _shader!.setFloat(11, widget.backgroundColor.b);
+    _shader!.setFloat(12, widget.lightDirection.x);
+    _shader!.setFloat(13, widget.lightDirection.y);
+    _shader!.setFloat(14, widget.lightDirection.z);
+    _shader!.setFloat(15, widget.cameraHeight);
+    _shader!.setFloat(16, widget.rayDirection.x);
+    _shader!.setFloat(17, widget.rayDirection.y);
+    _shader!.setFloat(18, widget.rayDirection.z);
 
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
@@ -85,7 +141,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
-    }, initialIndex: 2);
+    }, initialIndex: 19);
   }
 
   Future<void> _loadShader() async {
