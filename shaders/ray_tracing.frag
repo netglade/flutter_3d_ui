@@ -630,9 +630,11 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 }
 
 // Function to trace a reflection ray and return the color
-vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection) {
+vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
     // Offset the ray origin slightly to prevent self-intersection
-    vec3 offsetOrigin = rayOrigin + rayDirection * EPSILON;
+    vec3 rayDirectionToNormal = normal * dot(rayDirection, normal);
+
+    vec3 offsetOrigin = rayOrigin + rayDirection * EPSILON - (rayDirection - rayDirectionToNormal) * EPSILON * 2;
     
     // Trace the reflection ray
     SdfResult reflectionResult = rayTrace(offsetOrigin, rayDirection);
@@ -672,14 +674,15 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection) {
 // Function to calculate reflection contribution
 vec3 calculateReflection(vec3 p, vec3 normal, vec3 viewDir, vec3 F0, float roughness) {
     vec3 reflectionDir = reflect(-viewDir, normal);
-    vec3 reflectionColor = traceReflectionRay(p, reflectionDir);
+    vec3 reflectionColor = traceReflectionRay(p, reflectionDir, normal);
     
     // Calculate Fresnel factor for view direction
     vec3 viewFresnel = fresnelSchlick(max(dot(normal, viewDir), 0.0), F0);
     
     // Calculate reflection contribution
     // Attenuate by roughness for rough surfaces
-    return reflectionColor * viewFresnel * (1.0 - roughness);
+    // todo: * viewFresnel
+    return reflectionColor * (1.0 - roughness) * viewFresnel;
 }
 
 void main() {
@@ -730,11 +733,12 @@ void main() {
         vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
         F0 = mix(F0, albedo, finalShape.metallic);
         
+        // todo: +=
         // Add reflection contribution
         color += calculateReflection(p, normal, viewDir, F0, finalShape.roughness);
         
         // Apply tonemapping
-        color = tonemap(color);
+        // color = tonemap(color);
         
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {
