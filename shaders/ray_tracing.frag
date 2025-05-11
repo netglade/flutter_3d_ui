@@ -584,9 +584,9 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
 
-    vec3 albedo = backgroundColor;
+    vec3 albedo = sRGBToLinear(backgroundColor);
     if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
-        albedo = backgroundColor;
+        albedo = sRGBToLinear(backgroundColor);
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
         albedo = shape.sideColor;
     else
@@ -613,7 +613,7 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     vec3 specular = numerator / denominator;
 
     float NdotL = max(dot(N, L), 0.0);
-    vec3 radiance = lightColor * lightIntensity;
+    vec3 radiance = sRGBToLinear(lightColor) * lightIntensity;
 
     // Calculate shadows
     float shadow = 1.0;
@@ -656,7 +656,7 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
                 vec3(0.0, 0.0, 0.0),
                 0.0,
                 0.0,
-                backgroundColor,
+                sRGBToLinear(backgroundColor),
                 backgroundMetallic,
                 backgroundRoughness,
                 backgroundReflectance
@@ -668,7 +668,7 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
     }
     
     // If no intersection, return sky color
-    return skyColor;
+    return sRGBToLinear(skyColor);
 }
 
 // Function to calculate reflection contribution
@@ -688,6 +688,11 @@ vec3 calculateReflection(vec3 p, vec3 normal, vec3 viewDir, vec3 F0, float rough
 void main() {
     vec2 uv = FlutterFragCoord().xy;
     constructShapes();
+    
+    // Convert color uniforms to linear space
+    vec3 linearLightColor = sRGBToLinear(lightColor);
+    vec3 linearSkyColor = sRGBToLinear(skyColor);
+    vec3 linearBackgroundColor = sRGBToLinear(backgroundColor);
     
     // Normalize light direction once
     vec3 normalizedLightDir = normalize(lightDirection);
@@ -716,7 +721,7 @@ void main() {
                 vec3(0.0, 0.0, 0.0),
                 0.0,
                 0.0,
-                backgroundColor,
+                linearBackgroundColor,
                 backgroundMetallic,
                 backgroundRoughness,
                 backgroundReflectance
@@ -727,13 +732,12 @@ void main() {
         vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, finalShape);
         
         // Calculate base F0 for reflection
-        vec3 albedo = finalShape.size.x <= EPSILON ? backgroundColor : 
+        vec3 albedo = finalShape.size.x <= EPSILON ? linearBackgroundColor : 
                      (normal.z < EPSILON ? finalShape.sideColor : 
                      sRGBToLinear(texture(uTexture, vec2(p.x, p.y) / resolution).rgb));
         vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
         F0 = mix(F0, albedo, finalShape.metallic);
         
-        // todo: +=
         // Add reflection contribution
         color += calculateReflection(p, normal, viewDir, F0, finalShape.roughness);
         
@@ -743,6 +747,6 @@ void main() {
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {
         // Background color
-        fragColor = vec4(linearToSRGB(skyColor), 1.0);
+        fragColor = vec4(linearToSRGB(linearSkyColor), 1.0);
     }
 }
