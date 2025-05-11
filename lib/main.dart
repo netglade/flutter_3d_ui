@@ -21,35 +21,33 @@ class MyApp extends StatelessWidget {
       home: DefaultTextStyle(
         style: TextStyle(
             color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
-        child: ColoredBox(
-          color: Colors.white,
-          child: SpatialRenderer(
-            child: Center(
-              child: ListView(
-                  children: List.generate(
-                4,
-                (i) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: SpatialContainer(
-                        roughness: i % 2 == 0 ? 1.0 : 0.4,
-                        sideRadius: 70,
-                        topRadius: 20,
-                        elevation: 200,
-                        color: Colors.amber,
-                        sideColor: Colors.amber,
-                        child: Center(
-                          child: Text('ahojky'),
-                        ),
+        child: SpatialRenderer(
+          backgroundColor: Colors.blue,
+          child: Center(
+            child: ListView(
+                children: List.generate(
+              4,
+              (i) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: SpatialContainer(
+                      roughness: i % 2 == 0 ? 1.0 : 0.4,
+                      sideRadius: 70,
+                      topRadius: 20,
+                      elevation: 200,
+                      color: Colors.amber,
+                      sideColor: Colors.amber,
+                      child: Center(
+                        child: Text('ahojky'),
                       ),
                     ),
                   ),
                 ),
-              )),
-            ),
+              ),
+            )),
           ),
         ),
       ),

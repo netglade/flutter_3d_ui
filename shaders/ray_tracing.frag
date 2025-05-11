@@ -625,11 +625,62 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 
     vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL * shadow;
     vec3 ambient = vec3(indirectLightCoefficient) * albedo;
+
     return ambient + Lo;
 }
 
-float[5] array;
+// Function to trace a reflection ray and return the color
+vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection) {
+    // Offset the ray origin slightly to prevent self-intersection
+    vec3 offsetOrigin = rayOrigin + rayDirection * EPSILON;
+    
+    // Trace the reflection ray
+    SdfResult reflectionResult = rayTrace(offsetOrigin, rayDirection);
+    
+    if(reflectionResult.dist < MAX_DIST) {
+        // Hit point
+        vec3 p = offsetOrigin + rayDirection * reflectionResult.dist;
+        
+        // Calculate normal and view direction for the reflection
+        vec3 normal = calcNormal(p, reflectionResult.shape);
+        vec3 shiftNormal = calcShiftNormal(p, reflectionResult.shape);
+        vec3 viewDir = normalize(offsetOrigin - p);
+        
+        // Create background shape if needed
+        Shape finalShape = reflectionResult.shape;
+        if (reflectionResult.shape.size.x <= EPSILON) {
+            finalShape = Shape(
+                vec2(0.0, 0.0),
+                vec3(0.0, 0.0, 0.0),
+                0.0,
+                0.0,
+                backgroundColor,
+                backgroundMetallic,
+                backgroundRoughness,
+                backgroundReflectance
+            );
+        }
+        
+        // Calculate lighting for the reflection
+        return calcPBR(p, normal, shiftNormal, viewDir, -normalize(lightDirection), finalShape);
+    }
+    
+    // If no intersection, return sky color
+    return skyColor;
+}
 
+// Function to calculate reflection contribution
+vec3 calculateReflection(vec3 p, vec3 normal, vec3 viewDir, vec3 F0, float roughness) {
+    vec3 reflectionDir = reflect(-viewDir, normal);
+    vec3 reflectionColor = traceReflectionRay(p, reflectionDir);
+    
+    // Calculate Fresnel factor for view direction
+    vec3 viewFresnel = fresnelSchlick(max(dot(normal, viewDir), 0.0), F0);
+    
+    // Calculate reflection contribution
+    // Attenuate by roughness for rough surfaces
+    return reflectionColor * viewFresnel * (1.0 - roughness);
+}
 
 void main() {
     vec2 uv = FlutterFragCoord().xy;
@@ -669,8 +720,18 @@ void main() {
             );
         }
         
-        // Calculate lighting using PBR
+        // Calculate base lighting using PBR
         vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, finalShape);
+        
+        // Calculate base F0 for reflection
+        vec3 albedo = finalShape.size.x <= EPSILON ? backgroundColor : 
+                     (normal.z < EPSILON ? finalShape.sideColor : 
+                     sRGBToLinear(texture(uTexture, vec2(p.x, p.y) / resolution).rgb));
+        vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
+        F0 = mix(F0, albedo, finalShape.metallic);
+        
+        // Add reflection contribution
+        color += calculateReflection(p, normal, viewDir, F0, finalShape.roughness);
         
         // Apply tonemapping
         color = tonemap(color);

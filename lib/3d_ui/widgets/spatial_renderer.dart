@@ -46,7 +46,7 @@ class SpatialRenderer extends StatefulWidget {
     this.cameraHeight = 500.0,
     this.rayDirection = const Vector3(0.1, 0.1, -1.0),
     this.indirectLightStrength = 0.1,
-    this.backgroundRoughness = 1.0,
+    this.backgroundRoughness = 0.5,
     this.backgroundMetallic = 0.0,
     this.backgroundReflectance = 0.5,
   }) : super(key: key);
@@ -193,7 +193,8 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                       paint,
                     );
                   },
-                  child: ColoredBox(color: Colors.white, child: widget.child),
+                  child: ColoredBox(
+                      color: widget.backgroundColor, child: widget.child),
                 );
               }));
         });
