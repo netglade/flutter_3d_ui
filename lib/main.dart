@@ -22,7 +22,9 @@ class MyApp extends StatelessWidget {
         style: TextStyle(
             color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
         child: SpatialRenderer(
-          backgroundColor: Colors.blue,
+          backgroundMetallic: 1.0,
+          backgroundRoughness: 0.6,
+          backgroundColor: Colors.grey,
           child: Center(
             child: ListView(
                 children: List.generate(
