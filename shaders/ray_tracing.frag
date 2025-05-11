@@ -614,8 +614,16 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 
     float NdotL = max(dot(N, L), 0.0);
     vec3 radiance = lightColor * lightIntensity;
-    vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
 
+    // Calculate shadows
+    float shadow = 1.0;
+    vec3 shadowRayOrigin = p + N * EPSILON; // Offset from surface to prevent self-shadowing
+    SdfResult shadowResult = rayTrace(shadowRayOrigin, L);
+    if (shadowResult.dist < MAX_DIST) {
+        shadow = 0.0; // Point is in shadow
+    }
+
+    vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL * shadow;
     vec3 ambient = vec3(indirectLightCoefficient) * albedo;
     return ambient + Lo;
 }
