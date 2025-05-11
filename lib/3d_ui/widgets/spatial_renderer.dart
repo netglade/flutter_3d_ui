@@ -102,7 +102,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
           if (_shader == null) {
             return const CircularProgressIndicator();
           }
-  
+
           return ChangeNotifierProvider.value(
               value: _provider,
               child: LayoutBuilder(builder: (context, constraints) {
@@ -121,7 +121,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                       paint,
                     );
                   },
-                  child: widget.child,
+                  child: ColoredBox(color: Colors.white, child: widget.child),
                 );
               }));
         });

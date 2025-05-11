@@ -46,8 +46,8 @@ const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float ambientStrength = 0.2;
 const float specularStrength = 0.4;
 const float shininess = 32.0;
-const vec3 skyColor = vec3(0.9, 0.1, 1.0);
-const vec3 backgroundColor = vec3(0.0, 0.0, 0.0);
+const vec3 skyColor = vec3(0.9, 0.7, .0);
+const vec3 backgroundColor = vec3(1.0, 1.0, 1.0);
 
 /**
  * Calculates the intersection of a ray with a torus
