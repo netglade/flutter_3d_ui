@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:balatro_flutter/3d_ui/widgets/spatial_container.dart';
 import 'package:balatro_flutter/3d_ui/widgets/spatial_renderer.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,9 @@ class ButtonDemo extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = useState(true);
+    final roughness = useState(0.4);
+    final topRadius = useState(20.0);
+    final sideRadius = useState(70.0);
 
     // Create animation controller for elevation
     final animationController = useAnimationController(
@@ -35,7 +40,6 @@ class ButtonDemo extends HookWidget {
           height: 400,
           child: SpatialRenderer(
             enabled: enabled.value,
-            backgroundMetallic: 1.0,
             backgroundRoughness: 0.6,
             backgroundColor: Colors.grey,
             cameraOffset: const Offset(-40, -50),
@@ -46,9 +50,9 @@ class ButtonDemo extends HookWidget {
                 child: GestureDetector(
                   onTapDown: (_) => handlePress(),
                   child: SpatialContainer(
-                    roughness: 0.4,
-                    sideRadius: 70,
-                    topRadius: 20,
+                    roughness: roughness.value,
+                    sideRadius: sideRadius.value,
+                    topRadius: topRadius.value,
                     elevation: elevationAnimation,
                     color: Colors.red,
                     sideColor: Colors.red,
@@ -69,19 +73,68 @@ class ButtonDemo extends HookWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
-          '3D Button Demo',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+        SwitchListTile(
+          title: const Text(
+            '3D Effect',
+            style: TextStyle(fontSize: 18),
           ),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () {
-            enabled.value = !enabled.value;
+          value: enabled.value,
+          onChanged: (value) {
+            enabled.value = value;
           },
-          child: Text(enabled.value ? 'Disable 3D' : 'Enable 3D'),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Roughness: ${roughness.value.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Slider(
+                value: roughness.value,
+                min: 0.0,
+                max: 1.0,
+                divisions: 100,
+                label: roughness.value.toStringAsFixed(2),
+                onChanged: (value) {
+                  roughness.value = value;
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Side Radius: ${sideRadius.value.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Slider(
+                value: sideRadius.value,
+                min: 0.0,
+                max: 100.0,
+                label: sideRadius.value.toStringAsFixed(0),
+                onChanged: (value) {
+                  sideRadius.value = value;
+                  if (topRadius.value + 15.0 > value) {
+                    topRadius.value = max(0.0, value - 15.0);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Top Radius: ${topRadius.value.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Slider(
+                value: topRadius.value,
+                min: 0.0,
+                max: min(50.0, max(0.0, sideRadius.value - 15.0)),
+                label: topRadius.value.toStringAsFixed(0),
+                onChanged: (value) {
+                  topRadius.value = value;
+                },
+              ),
+            ],
+          ),
         ),
       ],
     );
