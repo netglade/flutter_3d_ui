@@ -1,5 +1,5 @@
-import 'package:balatro_flutter/3d_ui/widgets/spatial_container.dart';
-import 'package:balatro_flutter/3d_ui/widgets/spatial_renderer.dart';
+import 'package:balatro_flutter/button_demo.dart';
+import 'package:balatro_flutter/scroll_demo.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -9,7 +9,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,39 +17,55 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
-      home: DefaultTextStyle(
-        style: TextStyle(
-            color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
-        child: SpatialRenderer(
-          backgroundMetallic: 1.0,
-          backgroundRoughness: 0.6,
-          backgroundColor: Colors.grey,
-          child: Center(
-            child: ListView(
-                children: List.generate(
-              4,
-              (i) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: SizedBox(
-                    width: 200,
-                    height: 200,
-                    child: SpatialContainer(
-                      roughness: i % 2 == 0 ? 1.0 : 0.4,
-                      sideRadius: 70,
-                      topRadius: 20,
-                      elevation: 200,
-                      color: Colors.amber,
-                      sideColor: Colors.amber,
-                      child: Center(
-                        child: Text('ahojky'),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )),
-          ),
+      home: const NavigationExample(),
+    );
+  }
+}
+
+class NavigationExample extends StatefulWidget {
+  const NavigationExample({super.key});
+
+  @override
+  State<NavigationExample> createState() => _NavigationExampleState();
+}
+
+class _NavigationExampleState extends State<NavigationExample> {
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    ScrollDemo(),
+    ButtonDemo(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTextStyle(
+      style: const TextStyle(
+          color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
+      child: Scaffold(
+        body: Center(
+          child: _widgetOptions.elementAt(_selectedIndex),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.view_list),
+              label: 'Scroll Demo',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.touch_app),
+              label: 'Button Demo',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.amber[800],
+          onTap: _onItemTapped,
         ),
       ),
     );
