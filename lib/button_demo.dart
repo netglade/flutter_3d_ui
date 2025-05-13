@@ -23,6 +23,7 @@ class _ButtonDemoState extends State<ButtonDemo> {
             backgroundMetallic: 1.0,
             backgroundRoughness: 0.6,
             backgroundColor: Colors.grey,
+            cameraOffset: const Offset(-40, -50),
             child: Center(
               child: SizedBox(
                 width: 200,
@@ -31,11 +32,18 @@ class _ButtonDemoState extends State<ButtonDemo> {
                   roughness: 0.4,
                   sideRadius: 70,
                   topRadius: 20,
-                  elevation: 200,
-                  color: Colors.amber,
-                  sideColor: Colors.amber,
+                  elevation: 400,
+                  color: Colors.red,
+                  sideColor: Colors.red,
                   child: const Center(
-                    child: Text('ahojky'),
+                    child: Text(
+                      'PUSH',
+                      style: TextStyle(
+                        fontSize: 32,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
