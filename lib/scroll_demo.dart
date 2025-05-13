@@ -17,31 +17,69 @@ class ScrollDemo extends HookWidget {
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Colors.grey,
             cameraOffset: const Offset(-40, -50),
-            child: Center(
-              child: ListView(
-                children: [
-                  _CardItem(
-                    context,
-                    Icons.flight_takeoff,
-                    'Premium Business Class',
-                    'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
+            child: Stack(
+              children: [
+                Center(
+                  child: ListView(
+                    children: [
+                      _CardItem(
+                        context,
+                        Icons.flight_takeoff,
+                        'Premium Business Class',
+                        'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
+                      ),
+                      _CardItem(
+                        context,
+                        Icons.card_travel,
+                        'Summer Vacation Deals',
+                        'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
+                      ),
+                      _CardItem(
+                        context,
+                        Icons.workspace_premium,
+                        'Elite Status Benefits',
+                        'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide. Start earning points today!',
+                      ),
+                    ],
                   ),
-                  _CardItem(
-                    context,
-                    Icons.card_travel,
-                    'Summer Vacation Deals',
-                    'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
+                ),
+                Positioned(
+                  top: -50,
+                  left: -50,
+                  right: -50,
+                  child: SpatialContainer(
+                    roughness: 0.4,
+                    sideRadius: 0,
+                    topRadius: 0,
+                    elevation: 400,
+                    color: const Color(0xFF1E88E5),
+                    sideColor: const Color(0xFF1565C0),
+                    child: Container(
+                      height: 120,
+                      width: double.infinity,
+                    ),
                   ),
-                  _CardItem(
-                    context,
-                    Icons.workspace_premium,
-                    'Elite Status Benefits',
-                    'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide. Start earning points today!',
+                ),
+                Positioned(
+                  bottom: -50,
+                  left: -50,
+                  right: -50,
+                  child: SpatialContainer(
+                    roughness: 0.4,
+                    sideRadius: 0,
+                    topRadius: 0,
+                    elevation: 400,
+                    color: const Color(0xFF1E88E5),
+                    sideColor: const Color(0xFF1565C0),
+                    child: Container(
+                      height: 120,
+                      width: double.infinity,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
