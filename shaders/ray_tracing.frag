@@ -21,6 +21,57 @@ uniform float backgroundRoughness;
 uniform float backgroundMetallic;
 uniform float backgroundReflectance;
 
+// Shape uniforms - 5 shapes with 13 properties each
+// Shape 1
+uniform vec2 shape1Position;
+uniform vec3 shape1Size;
+uniform float shape1SideRadius;
+uniform float shape1TopRadius;
+uniform vec3 shape1SideColor;
+uniform float shape1Metallic;
+uniform float shape1Roughness;
+uniform float shape1Reflectance;
+
+// Shape 2
+uniform vec2 shape2Position;
+uniform vec3 shape2Size;
+uniform float shape2SideRadius;
+uniform float shape2TopRadius;
+uniform vec3 shape2SideColor;
+uniform float shape2Metallic;
+uniform float shape2Roughness;
+uniform float shape2Reflectance;
+
+// Shape 3
+uniform vec2 shape3Position;
+uniform vec3 shape3Size;
+uniform float shape3SideRadius;
+uniform float shape3TopRadius;
+uniform vec3 shape3SideColor;
+uniform float shape3Metallic;
+uniform float shape3Roughness;
+uniform float shape3Reflectance;
+
+// Shape 4
+uniform vec2 shape4Position;
+uniform vec3 shape4Size;
+uniform float shape4SideRadius;
+uniform float shape4TopRadius;
+uniform vec3 shape4SideColor;
+uniform float shape4Metallic;
+uniform float shape4Roughness;
+uniform float shape4Reflectance;
+
+// Shape 5
+uniform vec2 shape5Position;
+uniform vec3 shape5Size;
+uniform float shape5SideRadius;
+uniform float shape5TopRadius;
+uniform vec3 shape5SideColor;
+uniform float shape5Metallic;
+uniform float shape5Roughness;
+uniform float shape5Reflectance;
+
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
     vec3 size; // width, height, elevation
@@ -43,7 +94,6 @@ const Shape defaultShape = Shape(
     0.0
 );
 
-uniform float shapesInput[MAX_SHAPES * SHAPE_STRIDE];
 Shape[MAX_SHAPES] shapes;
 
 out vec4 fragColor;
@@ -213,22 +263,67 @@ float torusIntersection(in vec3 rayOrigin, in vec3 rayDirection, in vec2 torusRa
     return closestIntersection;
 }
 
-// Function to construct a Shape struct from the flat array
+// Function to construct a Shape struct from the individual uniforms
 void constructShapes() {
-    for(int i = 0; i < MAX_SHAPES; i++) {
-        Shape shape;
+    // Shape 1
+    shapes[0] = Shape(
+        shape1Position,
+        shape1Size,
+        shape1SideRadius,
+        shape1TopRadius,
+        sRGBToLinear(shape1SideColor),
+        shape1Metallic,
+        shape1Roughness,
+        shape1Reflectance
+    );
 
-        shape.position = vec2(shapesInput[i * SHAPE_STRIDE], shapesInput[i * SHAPE_STRIDE + 1]);
-        shape.size = vec3(shapesInput[i * SHAPE_STRIDE + 2], shapesInput[i * SHAPE_STRIDE + 3], shapesInput[i * SHAPE_STRIDE + 4]);
-        shape.sideRadius = shapesInput[i * SHAPE_STRIDE + 5];
-        shape.topRadius = shapesInput[i * SHAPE_STRIDE + 6];
-        shape.sideColor = sRGBToLinear(vec3(shapesInput[i * SHAPE_STRIDE + 7], shapesInput[i * SHAPE_STRIDE + 8], shapesInput[i * SHAPE_STRIDE + 9]));
-        shape.metallic = shapesInput[i * SHAPE_STRIDE + 10];
-        shape.roughness = shapesInput[i * SHAPE_STRIDE + 11]; 
-        shape.reflectance = shapesInput[i * SHAPE_STRIDE + 12];
+    // Shape 2
+    shapes[1] = Shape(
+        shape2Position,
+        shape2Size,
+        shape2SideRadius,
+        shape2TopRadius,
+        sRGBToLinear(shape2SideColor),
+        shape2Metallic,
+        shape2Roughness,
+        shape2Reflectance
+    );
 
-        shapes[i] = shape;
-    }
+    // Shape 3
+    shapes[2] = Shape(
+        shape3Position,
+        shape3Size,
+        shape3SideRadius,
+        shape3TopRadius,
+        sRGBToLinear(shape3SideColor),
+        shape3Metallic,
+        shape3Roughness,
+        shape3Reflectance
+    );
+
+    // Shape 4
+    shapes[3] = Shape(
+        shape4Position,
+        shape4Size,
+        shape4SideRadius,
+        shape4TopRadius,
+        sRGBToLinear(shape4SideColor),
+        shape4Metallic,
+        shape4Roughness,
+        shape4Reflectance
+    );
+
+    // Shape 5
+    shapes[4] = Shape(
+        shape5Position,
+        shape5Size,
+        shape5SideRadius,
+        shape5TopRadius,
+        sRGBToLinear(shape5SideColor),
+        shape5Metallic,
+        shape5Roughness,
+        shape5Reflectance
+    );
 }
 
 vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
@@ -590,7 +685,7 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
         albedo = shape.sideColor;
     else
-        albedo = sRGBToLinear(texture(uTexture, textureUv).rgb);
+        albedo = sRGBToLinear(texture(uTexture, vec2(textureUv.x, 1.0 - textureUv.y)).rgb);
 
     // Calculate base F0 using reflectance
     vec3 F0 = vec3(0.16 * shape.reflectance * shape.reflectance);
@@ -734,7 +829,7 @@ void main() {
         // Calculate base F0 for reflection
         vec3 albedo = finalShape.size.x <= EPSILON ? linearBackgroundColor : 
                      (normal.z < EPSILON ? finalShape.sideColor : 
-                     sRGBToLinear(texture(uTexture, vec2(p.x, p.y) / resolution).rgb));
+                     sRGBToLinear(texture(uTexture, vec2(p.x / resolution.x, 1.0 - p.y / resolution.y)).rgb));
         vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
         F0 = mix(F0, albedo, finalShape.metallic);
         
