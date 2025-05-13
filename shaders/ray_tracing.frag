@@ -1,4 +1,4 @@
-#version 460 core
+#version 310 es
 
 #include <flutter/runtime_effect.glsl>
 
@@ -258,7 +258,7 @@ float lengthSquared( vec3 x)
 }
 
 vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
-    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, topR);
+    vec3 adjustedDimensions = dimensions / 2.0 - vec3(sideR, sideR, topR);
     
     vec3 offset = abs(p) - adjustedDimensions;
 
@@ -278,7 +278,7 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     // If we're completely inside, find closest faces
     if(lengthSquared(offsetNonNegative) <= EPSILON) {
         vec3 closest = vec3(0.0, 0.0, 0.0);
-        if(offset.z + EPSILON*2 >= offset.x && offset.z + EPSILON > offset.y) {
+        if(offset.z + EPSILON*2.0 >= offset.x && offset.z + EPSILON > offset.y) {
             closest.z = sign(p.z);
         } else if(offset.y + EPSILON >= offset.x) {
             closest.y = sign(p.y);
@@ -298,18 +298,18 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
 }
 
 vec3 calcShapeShiftNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
-    vec3 adjustedDimensions = dimensions / 2 - vec3(sideR, sideR, 0.0)
+    vec3 adjustedDimensions = dimensions / 2.0 - vec3(sideR, sideR, 0.0)
         - vec3(textureSamplingEpsilon, textureSamplingEpsilon, 0.0);
     
     vec3 offset = abs(p) - adjustedDimensions;
     vec3 offsetNonNegative = max(offset, 0.0);
     if (offsetNonNegative.x*offsetNonNegative.x + offsetNonNegative.y*offsetNonNegative.y > sideR*sideR) {
         vec3 normal;
-        offsetNonNegative.z = 0;
+        offsetNonNegative.z = 0.0;
         float len = length(offsetNonNegative);
         normal.x = (offsetNonNegative.x / len) * sign(p.x);
         normal.y = (offsetNonNegative.y / len) * sign(p.y);
-        normal.z = 0;
+        normal.z = 0.0;
         return normal;
     } else {
         return vec3(0.0, 0.0, 1.0);
@@ -403,11 +403,11 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     // Adjust position relative to the box surface
     intersectionPoint -= boxHalfSize;
     
-    if((intersectionPoint.x < 0 && intersectionPoint.y < sideRadius - topRadius)) {
+    if((intersectionPoint.x < 0.0 && intersectionPoint.y < sideRadius - topRadius)) {
         return intersectionDist;
     }
 
-    if (intersectionPoint.y < 0 && intersectionPoint.x < sideRadius - topRadius) {
+    if (intersectionPoint.y < 0.0 && intersectionPoint.x < sideRadius - topRadius) {
         return intersectionDist;
     }
 
@@ -505,15 +505,15 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
     Shape resultShape = defaultShape;
 
     float dist = plaIntersect(ro, rd, vec4(0.0, 0.0, 1.0, 0.0));
-    if(dist < 0)
+    if(dist < 0.0)
         dist = MAX_DIST;
 
     for(int i = 0; i < MAX_SHAPES; i++) {
         Shape shape = shapes[i];
         if(shape.size.x < EPSILON) continue;
         float intersect = roundedboxIntersect(ro - vec3(shape.position, 0.0), rd, shape.size / 2.0 - vec3(shape.sideRadius, shape.sideRadius, shape.topRadius), shape.sideRadius, shape.topRadius);
-        if(intersect > 0.0 && intersect.x < dist) {
-            dist = intersect.x;
+        if(intersect > 0.0 && intersect < dist) {
+            dist = intersect;
             resultShape = shape;
         }
     }
@@ -634,7 +634,7 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
     // Offset the ray origin slightly to prevent self-intersection
     vec3 rayDirectionToNormal = normal * dot(rayDirection, normal);
 
-    vec3 offsetOrigin = rayOrigin + rayDirection * EPSILON - (rayDirection - rayDirectionToNormal) * EPSILON * 2;
+    vec3 offsetOrigin = rayOrigin + rayDirection * EPSILON - (rayDirection - rayDirectionToNormal) * EPSILON * 2.0;
     
     // Trace the reflection ray
     SdfResult reflectionResult = rayTrace(offsetOrigin, rayDirection);
