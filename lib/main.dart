@@ -33,8 +33,8 @@ class _NavigationExampleState extends State<NavigationExample> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    ScrollDemo(),
     ButtonDemo(),
+    ScrollDemo(),
   ];
 
   void _onItemTapped(int index) {
@@ -55,12 +55,12 @@ class _NavigationExampleState extends State<NavigationExample> {
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.view_list),
-              label: 'Scroll Demo',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.touch_app),
               label: 'Button Demo',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.view_list),
+              label: 'Scroll Demo',
             ),
           ],
           currentIndex: _selectedIndex,

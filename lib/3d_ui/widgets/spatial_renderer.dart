@@ -73,7 +73,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
   final SpatialRendererProvider _provider = SpatialRendererProvider();
   FragmentShader? _shader = null;
 
-  static const int _maxShapes = 5;
+  static const int _maxShapes = 8;
 
   void _setShaderUniforms() {
     if (_shader == null) {

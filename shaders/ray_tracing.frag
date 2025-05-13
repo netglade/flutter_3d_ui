@@ -3,7 +3,7 @@
 #include <flutter/runtime_effect.glsl>
 
 const int SHAPE_STRIDE = 13;
-const int MAX_SHAPES = 5;
+const int MAX_SHAPES = 8;
 
 uniform sampler2D uTexture;
 uniform vec2 resolution;
@@ -72,6 +72,36 @@ uniform vec3 shape5SideColor;
 uniform float shape5Metallic;
 uniform float shape5Roughness;
 uniform float shape5Reflectance;
+
+// Shape 6
+uniform vec2 shape6Position;
+uniform vec3 shape6Size;
+uniform float shape6SideRadius;
+uniform float shape6TopRadius;
+uniform vec3 shape6SideColor;
+uniform float shape6Metallic;
+uniform float shape6Roughness;
+uniform float shape6Reflectance;
+
+// Shape 7
+uniform vec2 shape7Position;
+uniform vec3 shape7Size;
+uniform float shape7SideRadius;
+uniform float shape7TopRadius;
+uniform vec3 shape7SideColor;
+uniform float shape7Metallic;
+uniform float shape7Roughness;
+uniform float shape7Reflectance;
+
+// Shape 8
+uniform vec2 shape8Position;
+uniform vec3 shape8Size;
+uniform float shape8SideRadius;
+uniform float shape8TopRadius;
+uniform vec3 shape8SideColor;
+uniform float shape8Metallic;
+uniform float shape8Roughness;
+uniform float shape8Reflectance;
 
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
@@ -324,6 +354,42 @@ void constructShapes() {
         shape5Metallic,
         shape5Roughness,
         shape5Reflectance
+    );
+
+    // Shape 6
+    shapes[5] = Shape(
+        shape6Position,
+        shape6Size,
+        shape6SideRadius,
+        shape6TopRadius,
+        sRGBToLinear(shape6SideColor),
+        shape6Metallic,
+        shape6Roughness,
+        shape6Reflectance
+    );
+
+    // Shape 7
+    shapes[6] = Shape(
+        shape7Position,
+        shape7Size,
+        shape7SideRadius,
+        shape7TopRadius,
+        sRGBToLinear(shape7SideColor),
+        shape7Metallic,
+        shape7Roughness,
+        shape7Reflectance
+    );
+
+    // Shape 8
+    shapes[7] = Shape(
+        shape8Position,
+        shape8Size,
+        shape8SideRadius,
+        shape8TopRadius,
+        sRGBToLinear(shape8SideColor),
+        shape8Metallic,
+        shape8Roughness,
+        shape8Reflectance
     );
 }
 
