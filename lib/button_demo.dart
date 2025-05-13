@@ -2,8 +2,15 @@ import 'package:balatro_flutter/3d_ui/widgets/spatial_container.dart';
 import 'package:balatro_flutter/3d_ui/widgets/spatial_renderer.dart';
 import 'package:flutter/material.dart';
 
-class ButtonDemo extends StatelessWidget {
+class ButtonDemo extends StatefulWidget {
   const ButtonDemo({super.key});
+
+  @override
+  State<ButtonDemo> createState() => _ButtonDemoState();
+}
+
+class _ButtonDemoState extends State<ButtonDemo> {
+  bool _enabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +19,7 @@ class ButtonDemo extends StatelessWidget {
         Container(
           height: 400,
           child: SpatialRenderer(
+            enabled: _enabled,
             backgroundMetallic: 1.0,
             backgroundRoughness: 0.6,
             backgroundColor: Colors.grey,
@@ -41,6 +49,15 @@ class ButtonDemo extends StatelessWidget {
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _enabled = !_enabled;
+            });
+          },
+          child: Text(_enabled ? 'Disable 3D' : 'Enable 3D'),
         ),
       ],
     );

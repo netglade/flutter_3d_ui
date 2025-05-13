@@ -18,6 +18,7 @@ class SpatialRenderer extends StatefulWidget {
   final double backgroundRoughness;
   final double backgroundMetallic;
   final double backgroundReflectance;
+  final bool enabled;
 
   /// Creates a 3D renderer for the given [child] widget.
   ///
@@ -35,6 +36,7 @@ class SpatialRenderer extends StatefulWidget {
   /// The [backgroundRoughness] sets the roughness of the background material.
   /// The [backgroundMetallic] sets the metallic property of the background material.
   /// The [backgroundReflectance] sets the reflectance of the background material.
+  /// The [enabled] parameter controls whether the 3D rendering is active.
   SpatialRenderer({
     Key? key,
     required this.child,
@@ -49,6 +51,7 @@ class SpatialRenderer extends StatefulWidget {
     this.backgroundRoughness = 0.0,
     this.backgroundMetallic = 0.0,
     this.backgroundReflectance = 0.5,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -182,7 +185,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                 _shader!.setFloat(1, constraints.maxHeight);
 
                 return AnimatedSampler(
-                  enabled: true,
+                  enabled: widget.enabled,
                   (image, size, canvas) {
                     _shader!.setImageSampler(0, image);
                     _setShaderUniforms();
