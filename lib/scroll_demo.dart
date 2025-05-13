@@ -17,13 +17,14 @@ class ScrollDemo extends HookWidget {
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.blueGrey,
             cameraOffset: const Offset(-40, -50),
             child: Stack(
               children: [
                 Center(
                   child: ListView(
                     children: [
+                      const SizedBox(height: 50),
                       _CardItem(
                         context,
                         Icons.flight_takeoff,
@@ -42,6 +43,7 @@ class ScrollDemo extends HookWidget {
                         'Elite Status Benefits',
                         'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide. Start earning points today!',
                       ),
+                      const SizedBox(height: 70),
                     ],
                   ),
                 ),
@@ -54,8 +56,8 @@ class ScrollDemo extends HookWidget {
                     sideRadius: 0,
                     topRadius: 0,
                     elevation: 400,
-                    color: const Color(0xFF1E88E5),
-                    sideColor: const Color(0xFF1565C0),
+                    color: Colors.blueGrey,
+                    sideColor: Colors.blueGrey,
                     child: Container(
                       height: 120,
                       width: double.infinity,
@@ -71,8 +73,8 @@ class ScrollDemo extends HookWidget {
                     sideRadius: 0,
                     topRadius: 0,
                     elevation: 400,
-                    color: const Color(0xFF1E88E5),
-                    sideColor: const Color(0xFF1565C0),
+                    color: Colors.blueGrey,
+                    sideColor: Colors.blueGrey,
                     child: Container(
                       height: 120,
                       width: double.infinity,
