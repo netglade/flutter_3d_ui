@@ -7,37 +7,42 @@ class ButtonDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SpatialRenderer(
-      backgroundMetallic: 1.0,
-      backgroundRoughness: 0.6,
-      backgroundColor: Colors.grey,
-      child: Center(
-        child: ListView(
-          children: List.generate(
-            4,
-            (i) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: SpatialContainer(
-                    roughness: i % 2 == 0 ? 1.0 : 0.4,
-                    sideRadius: 70,
-                    topRadius: 20,
-                    elevation: 200,
-                    color: Colors.amber,
-                    sideColor: Colors.amber,
-                    child: const Center(
-                      child: Text('ahojky'),
-                    ),
+    return Column(
+      children: [
+        Container(
+          height: 400,
+          child: SpatialRenderer(
+            backgroundMetallic: 1.0,
+            backgroundRoughness: 0.6,
+            backgroundColor: Colors.grey,
+            child: Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: SpatialContainer(
+                  roughness: 0.4,
+                  sideRadius: 70,
+                  topRadius: 20,
+                  elevation: 200,
+                  color: Colors.amber,
+                  sideColor: Colors.amber,
+                  child: const Center(
+                    child: Text('ahojky'),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 20),
+        const Text(
+          '3D Button Demo',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
