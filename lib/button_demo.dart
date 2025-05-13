@@ -1,25 +1,40 @@
 import 'package:balatro_flutter/3d_ui/widgets/spatial_container.dart';
 import 'package:balatro_flutter/3d_ui/widgets/spatial_renderer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class ButtonDemo extends StatefulWidget {
+class ButtonDemo extends HookWidget {
   const ButtonDemo({super.key});
 
   @override
-  State<ButtonDemo> createState() => _ButtonDemoState();
-}
-
-class _ButtonDemoState extends State<ButtonDemo> {
-  bool _enabled = true;
-
-  @override
   Widget build(BuildContext context) {
+    final enabled = useState(true);
+
+    // Create animation controller for elevation
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 500),
+      initialValue: 400.0,
+    );
+
+    final elevationAnimation = useAnimation(
+        Tween<double>(begin: 200.0, end: 400.0).animate(CurvedAnimation(
+      parent: animationController,
+      curve: Curves.easeInOut,
+    )));
+
+    void handlePress() {
+      // Immediately jump to 200 by setting controller to beginning value
+      animationController.value = 0.0;
+      // Then animate from 200 back to 400
+      animationController.forward();
+    }
+
     return Column(
       children: [
         Container(
           height: 400,
           child: SpatialRenderer(
-            enabled: _enabled,
+            enabled: enabled.value,
             backgroundMetallic: 1.0,
             backgroundRoughness: 0.6,
             backgroundColor: Colors.grey,
@@ -28,20 +43,23 @@ class _ButtonDemoState extends State<ButtonDemo> {
               child: SizedBox(
                 width: 200,
                 height: 200,
-                child: SpatialContainer(
-                  roughness: 0.4,
-                  sideRadius: 70,
-                  topRadius: 20,
-                  elevation: 400,
-                  color: Colors.red,
-                  sideColor: Colors.red,
-                  child: const Center(
-                    child: Text(
-                      'PUSH',
-                      style: TextStyle(
-                        fontSize: 32,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                child: GestureDetector(
+                  onTapDown: (_) => handlePress(),
+                  child: SpatialContainer(
+                    roughness: 0.4,
+                    sideRadius: 70,
+                    topRadius: 20,
+                    elevation: elevationAnimation,
+                    color: Colors.red,
+                    sideColor: Colors.red,
+                    child: const Center(
+                      child: Text(
+                        'PUSH',
+                        style: TextStyle(
+                          fontSize: 32,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -61,11 +79,9 @@ class _ButtonDemoState extends State<ButtonDemo> {
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            setState(() {
-              _enabled = !_enabled;
-            });
+            enabled.value = !enabled.value;
           },
-          child: Text(_enabled ? 'Disable 3D' : 'Enable 3D'),
+          child: Text(enabled.value ? 'Disable 3D' : 'Enable 3D'),
         ),
       ],
     );
