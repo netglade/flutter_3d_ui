@@ -17,7 +17,7 @@ class ScrollDemo extends HookWidget {
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.lightBlueAccent,
             cameraOffset: const Offset(-40, -50),
             child: Center(
               child: ListView(
@@ -26,13 +26,13 @@ class ScrollDemo extends HookWidget {
                     context,
                     Icons.flight_takeoff,
                     'Premium Business Class',
-                    'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip or special occasion.',
+                    'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
                   ),
                   _CardItem(
                     context,
                     Icons.card_travel,
                     'Summer Vacation Deals',
-                    'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding. Limited time offer for flights between June and August.',
+                    'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
                   ),
                   _CardItem(
                     context,
@@ -89,8 +89,8 @@ class ScrollDemo extends HookWidget {
                         sideRadius: 50,
                         topRadius: 20,
                         elevation: 300,
-                        color: Colors.blue,
-                        sideColor: Colors.blue.shade700,
+                        color: const Color(0xFF1E88E5),
+                        sideColor: const Color(0xFF1565C0),
                         child: Icon(
                           icon,
                           color: Colors.white,
@@ -103,9 +103,10 @@ class ScrollDemo extends HookWidget {
                       child: Text(
                         title,
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A237E),
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ),
@@ -114,10 +115,11 @@ class ScrollDemo extends HookWidget {
                 const SizedBox(height: 20),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                    height: 1.4,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF455A64),
+                    height: 1.5,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],
