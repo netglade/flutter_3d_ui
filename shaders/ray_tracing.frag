@@ -752,7 +752,7 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
         albedo = shape.sideColor;
     else
-        albedo = sRGBToLinear(texture(uTexture, vec2(textureUv.x, 1.0 - textureUv.y)).rgb);
+        albedo = sRGBToLinear(texture(uTexture, vec2(textureUv.x, textureUv.y)).rgb);
 
     // Calculate base F0 using reflectance
     vec3 F0 = vec3(0.16 * shape.reflectance * shape.reflectance);
@@ -896,7 +896,7 @@ void main() {
         // Calculate base F0 for reflection
         vec3 albedo = finalShape.size.x <= EPSILON ? linearBackgroundColor : 
                      (normal.z < EPSILON ? finalShape.sideColor : 
-                     sRGBToLinear(texture(uTexture, vec2(p.x / resolution.x, 1.0 - p.y / resolution.y)).rgb));
+                     sRGBToLinear(texture(uTexture, vec2(p.x / resolution.x,  p.y / resolution.y)).rgb));
         vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
         F0 = mix(F0, albedo, finalShape.metallic);
         
