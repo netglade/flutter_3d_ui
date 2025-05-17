@@ -39,36 +39,25 @@ class ResponsiveWrapper extends StatelessWidget {
           constraints: BoxConstraints(
             minHeight: MediaQuery.of(context).size.height,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 550,
-                child: Image.asset(
-                  'assets/images/wordart_title.png',
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 25.0),
+              child: Container(
+                width: mobileWidth,
+                height: mobileHeight,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.black,
+                    width: 8,
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: child,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 25.0),
-                child: Container(
-                  width: mobileWidth,
-                  height: mobileHeight,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 8,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: child,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

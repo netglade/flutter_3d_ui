@@ -45,8 +45,8 @@ class ButtonDemo extends HookWidget {
             cameraOffset: const Offset(-40, -50),
             child: Center(
               child: SizedBox(
-                width: 200,
-                height: 200,
+                width: 205,
+                height: 205,
                 child: GestureDetector(
                   onTapDown: (_) => handlePress(),
                   child: SpatialContainer(

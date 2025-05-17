@@ -18,6 +18,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_native_splash: ^2.3.10
+
+flutter_native_splash:
+  color: "ffffff"
+  image: assets/images/wordart_title.png
+  web: true
+  web_image_mode: center
 
 flutter:
   uses-material-design: true
