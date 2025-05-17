@@ -22,3 +22,5 @@ flutter:
   uses-material-design: true
   shaders:
     - shaders/ray_tracing.frag
+  assets:
+    - assets/images/

@@ -24,20 +24,33 @@ class ResponsiveWrapper extends StatelessWidget {
     }
 
     return Center(
-      child: Container(
-        width: mobileWidth,
-        height: mobileHeight,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.black,
-            width: 5,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/wordart_title.png',
+            scale: 1.25,
           ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: child,
-        ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              width: mobileWidth,
+              height: mobileHeight,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.black,
+                  width: 5,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: child,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
