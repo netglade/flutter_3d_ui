@@ -1,4 +1,5 @@
 import 'package:balatro_flutter/button_demo.dart';
+import 'package:balatro_flutter/components/responsive_wrapper.dart';
 import 'package:balatro_flutter/scroll_demo.dart';
 import 'package:flutter/material.dart';
 
@@ -48,24 +49,29 @@ class _NavigationExampleState extends State<NavigationExample> {
     return DefaultTextStyle(
       style: const TextStyle(
           color: Colors.black, decoration: TextDecoration.none, fontSize: 18),
-      child: Scaffold(
-        body: Center(
-          child: _widgetOptions.elementAt(_selectedIndex),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.touch_app),
-              label: 'Button Demo',
+      child: ColoredBox(
+        color: Colors.white,
+        child: ResponsiveWrapper(
+          child: Scaffold(
+            body: Center(
+              child: _widgetOptions.elementAt(_selectedIndex),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.view_list),
-              label: 'Scroll Demo',
+            bottomNavigationBar: BottomNavigationBar(
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.touch_app),
+                  label: 'Button Demo',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.view_list),
+                  label: 'Scroll Demo',
+                ),
+              ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Colors.amber[800],
+              onTap: _onItemTapped,
             ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.amber[800],
-          onTap: _onItemTapped,
+          ),
         ),
       ),
     );

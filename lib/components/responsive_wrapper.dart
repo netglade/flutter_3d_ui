@@ -1,0 +1,44 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+
+class ResponsiveWrapper extends StatelessWidget {
+  final Widget child;
+  final double mobileWidth;
+  final double mobileHeight;
+
+  const ResponsiveWrapper({
+    super.key,
+    required this.child,
+    this.mobileWidth = 405,
+    this.mobileHeight = 810,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+    if (isMobile) {
+      return child;
+    }
+
+    return Center(
+      child: Container(
+        width: mobileWidth,
+        height: mobileHeight,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+            width: 5,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
