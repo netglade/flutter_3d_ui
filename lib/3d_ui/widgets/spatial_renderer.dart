@@ -189,33 +189,11 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                   enabled: widget.enabled,
                   (image, size, canvas) {
                     if (!firstFrameRendered) {
-                      firstFrameRendered = true;
-                      final paint = Paint()..color = Colors.white;
-                      canvas.drawRect(
-                        Rect.fromLTWH(0, 0, size.width, size.height),
-                        paint,
-                      );
-
-                      // Draw loading text
-                      final textPainter = TextPainter(
-                        text: const TextSpan(
-                          text: 'Loading 3D view...',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 32,
-                          ),
-                        ),
-                        textDirection: TextDirection.ltr,
-                      );
-                      textPainter.layout();
-                      textPainter.paint(
-                        canvas,
-                        Offset(
-                          (size.width - textPainter.width) / 2,
-                          (size.height - textPainter.height) / 2,
-                        ),
-                      );
-                      return;
+                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                        setState(() {
+                          firstFrameRendered = true;
+                        });
+                      });
                     }
                     _shader!.setImageSampler(0, image);
 
