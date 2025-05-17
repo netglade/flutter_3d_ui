@@ -1,7 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_3d_ui/3d_ui/models/vector3.dart';
+import 'package:flutter_3d_ui/3d_ui/shader_provider.dart';
 import 'package:flutter_3d_ui/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:provider/provider.dart';
@@ -61,43 +60,38 @@ class SpatialRenderer extends StatefulWidget {
 
 class _SpatialRendererState extends State<SpatialRenderer> {
   final SpatialRendererProvider _provider = SpatialRendererProvider();
-  FragmentShader? _shader;
-
-  static const int _maxShapes = 8;
-
   bool firstFrameRendered = false;
 
   void _setShaderUniforms() {
-    if (_shader == null) {
-      return;
-    }
+    final shader = context.read<ShaderProvider>().shader;
+    if (shader == null) return;
 
     final currentOffset = (context.findRenderObject() as RenderBox?)
             ?.localToGlobal(Offset.zero) ??
         Offset.zero;
 
     // Set light and camera uniforms
-    _shader!.setFloat(2, widget.lightColor.r);
-    _shader!.setFloat(3, widget.lightColor.g);
-    _shader!.setFloat(4, widget.lightColor.b);
-    _shader!.setFloat(5, widget.lightIntensity);
-    _shader!.setFloat(6, widget.skyColor.r);
-    _shader!.setFloat(7, widget.skyColor.g);
-    _shader!.setFloat(8, widget.skyColor.b);
-    _shader!.setFloat(9, widget.backgroundColor.r);
-    _shader!.setFloat(10, widget.backgroundColor.g);
-    _shader!.setFloat(11, widget.backgroundColor.b);
-    _shader!.setFloat(12, widget.lightDirection.x);
-    _shader!.setFloat(13, widget.lightDirection.y);
-    _shader!.setFloat(14, widget.lightDirection.z);
-    _shader!.setFloat(15, widget.cameraHeight);
-    _shader!.setFloat(16, widget.rayDirection.x);
-    _shader!.setFloat(17, widget.rayDirection.y);
-    _shader!.setFloat(18, widget.rayDirection.z);
-    _shader!.setFloat(19, widget.indirectLightStrength);
-    _shader!.setFloat(20, widget.backgroundRoughness);
-    _shader!.setFloat(21, widget.backgroundMetallic);
-    _shader!.setFloat(22, widget.backgroundReflectance);
+    shader.setFloat(2, widget.lightColor.r);
+    shader.setFloat(3, widget.lightColor.g);
+    shader.setFloat(4, widget.lightColor.b);
+    shader.setFloat(5, widget.lightIntensity);
+    shader.setFloat(6, widget.skyColor.r);
+    shader.setFloat(7, widget.skyColor.g);
+    shader.setFloat(8, widget.skyColor.b);
+    shader.setFloat(9, widget.backgroundColor.r);
+    shader.setFloat(10, widget.backgroundColor.g);
+    shader.setFloat(11, widget.backgroundColor.b);
+    shader.setFloat(12, widget.lightDirection.x);
+    shader.setFloat(13, widget.lightDirection.y);
+    shader.setFloat(14, widget.lightDirection.z);
+    shader.setFloat(15, widget.cameraHeight);
+    shader.setFloat(16, widget.rayDirection.x);
+    shader.setFloat(17, widget.rayDirection.y);
+    shader.setFloat(18, widget.rayDirection.z);
+    shader.setFloat(19, widget.indirectLightStrength);
+    shader.setFloat(20, widget.backgroundRoughness);
+    shader.setFloat(21, widget.backgroundMetallic);
+    shader.setFloat(22, widget.backgroundReflectance);
 
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
@@ -153,62 +147,51 @@ class _SpatialRendererState extends State<SpatialRenderer> {
       ...List.filled(_maxShapes - shapeData.length, List.filled(13, 0.0))
     ].expand((element) => element).toList();
 
-    _shader!.setFloatUniforms((setter) {
+    shader.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
     }, initialIndex: 23);
   }
 
-  Future<void> _loadShader() async {
-    FragmentProgram program =
-        await FragmentProgram.fromAsset('./shaders/ray_tracing.frag');
-    _shader = program.fragmentShader();
-  }
+  static const int _maxShapes = 8;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _loadShader(),
-        builder: (context, snapshot) {
-          if (_shader == null) {
-            return Center(
-                child: Text(
-              'Loading 3D view...',
-              style: TextStyle(
-                fontSize: 32,
-              ),
-            ));
-          }
+    return ChangeNotifierProvider.value(
+      value: _provider,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final shader = context.read<ShaderProvider>().shader;
+          if (shader == null) return const SizedBox.shrink();
 
-          return ChangeNotifierProvider.value(
-              value: _provider,
-              child: LayoutBuilder(builder: (context, constraints) {
-                _shader!.setFloat(0, constraints.maxWidth);
-                _shader!.setFloat(1, constraints.maxHeight);
+          shader.setFloat(0, constraints.maxWidth);
+          shader.setFloat(1, constraints.maxHeight);
 
-                return AnimatedSampler(
-                  enabled: widget.enabled,
-                  (image, size, canvas) {
-                    if (!firstFrameRendered) {
-                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                        setState(() {
-                          firstFrameRendered = true;
-                        });
-                      });
-                    }
-                    _shader!.setImageSampler(0, image);
+          return AnimatedSampler(
+            enabled: widget.enabled,
+            (image, size, canvas) {
+              if (!firstFrameRendered) {
+                WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                  setState(() {
+                    firstFrameRendered = true;
+                  });
+                });
+              }
+              shader.setImageSampler(0, image);
+              _setShaderUniforms();
 
-                    _setShaderUniforms();
-
-                    final paint = Paint()..shader = _shader!;
-                    canvas.drawRect(
-                      Rect.fromLTWH(0, 0, size.width, size.height),
-                      paint,
-                    );
-                  },
-                  child: ColoredBox(
-                      color: widget.backgroundColor, child: widget.child),
-                );
-              }));
-        });
+              final paint = Paint()..shader = shader;
+              canvas.drawRect(
+                Rect.fromLTWH(0, 0, size.width, size.height),
+                paint,
+              );
+            },
+            child: ColoredBox(
+              color: widget.backgroundColor,
+              child: widget.child,
+            ),
+          );
+        },
+      ),
+    );
   }
 }
