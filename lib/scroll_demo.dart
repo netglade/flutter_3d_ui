@@ -24,7 +24,7 @@ class ScrollDemo extends HookWidget {
                 Center(
                   child: ListView(
                     children: [
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 70),
                       _CardItem(
                         context,
                         Icons.flight_takeoff,
