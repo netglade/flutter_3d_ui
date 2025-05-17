@@ -213,6 +213,27 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                         Rect.fromLTWH(0, 0, size.width, size.height),
                         paint,
                       );
+
+                      // Draw loading text
+                      final textPainter = TextPainter(
+                        text: const TextSpan(
+                          text: 'Loading...',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        textDirection: TextDirection.ltr,
+                      );
+                      textPainter.layout();
+                      textPainter.paint(
+                        canvas,
+                        Offset(
+                          (size.width - textPainter.width) / 2,
+                          (size.height - textPainter.height) / 2,
+                        ),
+                      );
                       return;
                     }
 
