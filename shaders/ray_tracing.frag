@@ -1,14 +1,16 @@
 #version 310 es
 
+precision mediump float;
+precision mediump int;  
+
 #include <flutter/runtime_effect.glsl>
 
-const int SHAPE_STRIDE = 13;
 const int MAX_SHAPES = 8;
 
 uniform sampler2D uTexture;
 uniform vec2 resolution;
 
-// Light and camera uniforms
+// Global settings uniforms
 uniform vec3 lightColor;
 uniform float lightIntensity;
 uniform vec3 skyColor;
@@ -21,7 +23,7 @@ uniform float backgroundRoughness;
 uniform float backgroundMetallic;
 uniform float backgroundReflectance;
 
-// Shape uniforms - 5 shapes with 13 properties each
+// Shape uniforms
 // Shape 1
 uniform vec2 shape1Position;
 uniform vec3 shape1Size;
@@ -102,6 +104,11 @@ uniform float shape8Metallic;
 uniform float shape8Roughness;
 uniform float shape8Reflectance;
 
+// Pre-converted colors to linear space
+vec3 linearBackgroundColor;
+vec3 linearLightColor;
+vec3 linearSkyColor;
+
 struct Shape {
     vec2 position; // x, y coordinates of the center of the shape
     vec3 size; // width, height, elevation
@@ -128,15 +135,10 @@ Shape[MAX_SHAPES] shapes;
 
 out vec4 fragColor;
 
-const int MAX_STEPS = 60;
+const float PI = 3.14159265359;
 const float MAX_DIST = 10000.0;
 const float EPSILON = 0.1;
-const float textureSamplingEpsilon = 2.0;
-
-// Light properties
-const float ambientStrength = 0.2;
-const float specularStrength = 0.4;
-const float shininess = 32.0;
+const float TEXTURE_SAMPLING_EPSILON = 2.0;
 
 // Color space conversion functions
 vec3 linearToSRGB(vec3 color) {
@@ -148,7 +150,7 @@ vec3 sRGBToLinear(vec3 color) {
 }
 
 /**
- * Calculates the intersection of a ray with a torus
+ * Calculates the intersection of a ray with a torus (https://iquilezles.org/articles/intersectors/)
  * 
  * @param rayOrigin Origin point of the ray
  * @param rayDirection Direction vector of the ray
@@ -293,7 +295,6 @@ float torusIntersection(in vec3 rayOrigin, in vec3 rayDirection, in vec2 torusRa
     return closestIntersection;
 }
 
-// Function to construct a Shape struct from the individual uniforms
 void constructShapes() {
     // Shape 1
     shapes[0] = Shape(
@@ -392,17 +393,6 @@ void constructShapes() {
     );
 }
 
-vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
-{
-    vec3 oc = ro - ce;
-    float b = dot( oc, rd );
-    float c = dot( oc, oc ) - ra*ra;
-    float h = b*b - c;
-    if( h<0.0 ) return vec2(-1); // no intersection
-    h = sqrt( h );
-    return vec2( -b-h, -b+h );
-}
-
 float plaIntersect( in vec3 ro, in vec3 rd, in vec4 p )
 {
     return -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
@@ -429,9 +419,6 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
             offsetFlat = (sideR-topR) * normalize(offsetFlat);
         }
         offset = offset - offsetFlat;
-
-        // offset.x = max(offset.x - (sideR - topR), 0.0);
-        // offset.y = max(offset.y - (sideR - topR), 0.0);
     }
 
     vec3 offsetNonNegative = max(offset, 0.0);
@@ -458,9 +445,10 @@ vec3 calcShapeNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     return normal;
 }
 
+// Calculates normal used for ofsetting point for texture sampling, so it samples inside of the shape and not outside of it
 vec3 calcShapeShiftNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     vec3 adjustedDimensions = dimensions / 2.0 - vec3(sideR, sideR, 0.0)
-        - vec3(textureSamplingEpsilon, textureSamplingEpsilon, 0.0);
+        - vec3(TEXTURE_SAMPLING_EPSILON, TEXTURE_SAMPLING_EPSILON, 0.0);
     
     vec3 offset = abs(p) - adjustedDimensions;
     vec3 offsetNonNegative = max(offset, 0.0);
@@ -475,31 +463,9 @@ vec3 calcShapeShiftNormal(vec3 p, vec3 dimensions, float sideR, float topR) {
     } else {
         return vec3(0.0, 0.0, 1.0);
     }
-
-
-    // // If we're completely inside, find closest faces
-    // if(lengthSquared(offsetNonNegative) <= EPSILON) {
-    //     vec3 closest = vec3(0.0, 0.0, 0.0);
-    //     if(offset.z + EPSILON*2 >= offset.x && offset.z + EPSILON > offset.y) {
-    //         closest.z = sign(p.z);
-    //     } else if(offset.y + EPSILON >= offset.x) {
-    //         closest.y = sign(p.y);
-    //     } else {
-    //         closest.x = sign(p.x);
-    //     }
-    //     return closest;
-    // }
-    
-    // // Apply signs to the normalized offset
-    // vec3 normal;
-    // float len = length(offsetNonNegative);
-    // normal.x = (offsetNonNegative.x / len) * sign(p.x);
-    // normal.y = (offsetNonNegative.y / len) * sign(p.y);
-    // normal.z = (offsetNonNegative.z / len) * sign(p.z);
-    // return normal;
 }
 
-
+// Calculates normal used for ofsetting point for texture sampling, so it samples inside of the shape and not outside of it
 vec3 calcShiftNormal(vec3 p, Shape shape) {
     if (shape.size.x < EPSILON) {
         return vec3(0.0, 0.0, 1.0);
@@ -508,7 +474,6 @@ vec3 calcShiftNormal(vec3 p, Shape shape) {
     return calcShapeShiftNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
 }
 
-// Calculate normal using central differences
 vec3 calcNormal(vec3 p, Shape shape) {
     if (shape.size.x < EPSILON) {
         return vec3(0.0, 0.0, 1.0);
@@ -517,7 +482,7 @@ vec3 calcNormal(vec3 p, Shape shape) {
     return calcShapeNormal(p - vec3(shape.position, 0), shape.size, shape.sideRadius, shape.topRadius);
 }
 
-// This function calculates the intersection of a ray with a rounded box
+// This function calculates the intersection of a ray with a rounded box (modified from round box https://iquilezles.org/articles/intersectors/)
 // Parameters:
 // - rayOrigin: ray origin (vec3)
 // - rayDirection: ray direction (vec3)
@@ -647,7 +612,7 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
         }
     }
 
-    // check for torus intersection
+    // Check for torus intersection
     {
         float solution = torusIntersection(originToCornerZ, rayDirection, vec2(sideRadius - topRadius, topRadius));
         if(solution > 0.0 && solution < intersectionDist) {
@@ -661,7 +626,6 @@ float roundedboxIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 boxHa
     return intersectionDist;  // Return the intersection distance
 }
 
-// Ray marching function
 SdfResult rayTrace(vec3 ro, vec3 rd) {    
     Shape resultShape = defaultShape;
 
@@ -681,8 +645,6 @@ SdfResult rayTrace(vec3 ro, vec3 rd) {
 
     return SdfResult(dist, resultShape);    
 }
-
-const float PI = 3.14159265359;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -724,19 +686,14 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-vec3 tonemap(vec3 color) {
-    // Reinhard tonemapping
-    return color / (color + vec3(1.0));
-}
-
-// Calculate PBR lighting
+// Calculate PBR lighting (modified https://learnopengl.com/PBR/Lighting)
 vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalizedLightDir, Shape shape) {
     vec3 N = normal;
     vec3 V = viewDir;
     vec3 L = -normalizedLightDir;
     vec3 H = normalize(V + L);
 
-    float textureSamplingEpsilonAdjusted = textureSamplingEpsilon * 1.2;
+    float textureSamplingEpsilonAdjusted = TEXTURE_SAMPLING_EPSILON * 1.2;
 
     if (shape.size.x > EPSILON && shiftNormal.z < EPSILON) {
         p.x -= textureSamplingEpsilonAdjusted * shiftNormal.x;
@@ -745,9 +702,9 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
 
-    vec3 albedo = sRGBToLinear(backgroundColor);
+    vec3 albedo = linearBackgroundColor;
     if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
-        albedo = sRGBToLinear(backgroundColor);
+        albedo = linearBackgroundColor;
     else if (normal.z < EPSILON && shape.size.x > EPSILON)
         albedo = shape.sideColor;
     else
@@ -774,7 +731,7 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
     vec3 specular = numerator / denominator;
 
     float NdotL = max(dot(N, L), 0.0);
-    vec3 radiance = sRGBToLinear(lightColor) * lightIntensity;
+    vec3 radiance = linearLightColor * lightIntensity;
 
     // Calculate shadows
     float shadow = 1.0;
@@ -817,7 +774,7 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
                 vec3(0.0, 0.0, 0.0),
                 0.0,
                 0.0,
-                sRGBToLinear(backgroundColor),
+                linearBackgroundColor,
                 backgroundMetallic,
                 backgroundRoughness,
                 backgroundReflectance
@@ -829,7 +786,7 @@ vec3 traceReflectionRay(vec3 rayOrigin, vec3 rayDirection, vec3 normal) {
     }
     
     // If no intersection, return sky color
-    return sRGBToLinear(skyColor);
+    return linearSkyColor;
 }
 
 // Function to calculate reflection contribution
@@ -850,12 +807,11 @@ void main() {
     vec2 uv = FlutterFragCoord().xy;
     constructShapes();
     
-    // Convert color uniforms to linear space
-    vec3 linearLightColor = sRGBToLinear(lightColor);
-    vec3 linearSkyColor = sRGBToLinear(skyColor);
-    vec3 linearBackgroundColor = sRGBToLinear(backgroundColor);
+    // Convert color uniforms to linear space once
+    linearBackgroundColor = sRGBToLinear(backgroundColor);
+    linearLightColor = sRGBToLinear(lightColor);
+    linearSkyColor = sRGBToLinear(skyColor);
     
-    // Normalize light direction once
     vec3 normalizedLightDir = normalize(lightDirection);
     
     // Camera setup
@@ -864,7 +820,6 @@ void main() {
     vec3 ro = vec3(uv + computedCameraOffset, cameraHeight);  // Ray origin (camera position) with computed offset
     vec3 rd = normalizedRayDir;  // Ray direction
 
-    // Ray march
     SdfResult result = rayTrace(ro, rd);
     
     if(result.dist < MAX_DIST) {
@@ -901,15 +856,13 @@ void main() {
         vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
         F0 = mix(F0, albedo, finalShape.metallic);
         
-        // Add reflection contribution
         color += calculateReflection(p, normal, viewDir, F0, finalShape.roughness);
         
-        // Apply tonemapping
-        // color = tonemap(color);
+        // Tonemapping is not being applied as it is harder with it to obtain very bright colors while keeping other colors not bright
         
         fragColor = vec4(linearToSRGB(color), 1.0);
     } else {
         // Background color
-        fragColor = vec4(linearToSRGB(linearSkyColor), 1.0);
+        fragColor = vec4(skyColor, 1.0);
     }
 }
