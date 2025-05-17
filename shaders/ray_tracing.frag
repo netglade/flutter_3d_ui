@@ -20,7 +20,6 @@ uniform float indirectLightCoefficient;
 uniform float backgroundRoughness;
 uniform float backgroundMetallic;
 uniform float backgroundReflectance;
-uniform vec2 cameraOffset;
 
 // Shape uniforms - 5 shapes with 13 properties each
 // Shape 1
@@ -860,8 +859,10 @@ void main() {
     vec3 normalizedLightDir = normalize(lightDirection);
     
     // Camera setup
-    vec3 ro = vec3(uv + cameraOffset, cameraHeight);  // Ray origin (camera position) with offset
-    vec3 rd = normalize(rayDirectionParameter);  // Ray direction
+    vec3 normalizedRayDir = normalize(rayDirectionParameter);
+    vec2 computedCameraOffset = -vec2(normalizedRayDir.x, normalizedRayDir.y) * cameraHeight;
+    vec3 ro = vec3(uv + computedCameraOffset, cameraHeight);  // Ray origin (camera position) with computed offset
+    vec3 rd = normalizedRayDir;  // Ray direction
 
     // Ray march
     SdfResult result = rayTrace(ro, rd);

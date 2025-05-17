@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:flutter_3d_ui/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_3d_ui/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +19,6 @@ class SpatialRenderer extends StatefulWidget {
   final double backgroundMetallic;
   final double backgroundReflectance;
   final bool enabled;
-  final Offset cameraOffset;
 
   /// Creates a 3D renderer for the given [child] widget.
   ///
@@ -38,7 +37,6 @@ class SpatialRenderer extends StatefulWidget {
   /// The [backgroundMetallic] sets the metallic property of the background material.
   /// The [backgroundReflectance] sets the reflectance of the background material.
   /// The [enabled] parameter controls whether the 3D rendering is active.
-  /// The [cameraOffset] allows shifting the camera's view position.
   SpatialRenderer({
     Key? key,
     required this.child,
@@ -54,7 +52,6 @@ class SpatialRenderer extends StatefulWidget {
     this.backgroundMetallic = 0.0,
     this.backgroundReflectance = 0.5,
     this.enabled = true,
-    this.cameraOffset = Offset.zero,
   }) : super(key: key);
 
   @override
@@ -113,8 +110,6 @@ class _SpatialRendererState extends State<SpatialRenderer> {
     _shader!.setFloat(20, widget.backgroundRoughness);
     _shader!.setFloat(21, widget.backgroundMetallic);
     _shader!.setFloat(22, widget.backgroundReflectance);
-    _shader!.setFloat(23, widget.cameraOffset.dx);
-    _shader!.setFloat(24, widget.cameraOffset.dy);
 
     final shapeData = _provider.spatialContainers.entries
         .map((entry) {
@@ -172,7 +167,7 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
     _shader!.setFloatUniforms((setter) {
       setter.setFloats(uniforms);
-    }, initialIndex: 25);
+    }, initialIndex: 23);
   }
 
   Future<void> _loadShader() async {
