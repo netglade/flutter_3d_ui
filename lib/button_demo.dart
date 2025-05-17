@@ -36,7 +36,7 @@ class ButtonDemo extends HookWidget {
 
     return Column(
       children: [
-        Container(
+        SizedBox(
           height: 400,
           child: SpatialRenderer(
             enabled: enabled.value,
@@ -71,7 +71,7 @@ class ButtonDemo extends HookWidget {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 15),
         SwitchListTile(
           title: const Text(
             '3D Effect',
@@ -82,6 +82,7 @@ class ButtonDemo extends HookWidget {
             enabled.value = value;
           },
         ),
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(

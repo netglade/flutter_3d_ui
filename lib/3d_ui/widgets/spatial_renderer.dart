@@ -37,8 +37,8 @@ class SpatialRenderer extends StatefulWidget {
   /// The [backgroundMetallic] sets the metallic property of the background material.
   /// The [backgroundReflectance] sets the reflectance of the background material.
   /// The [enabled] parameter controls whether the 3D rendering is active.
-  SpatialRenderer({
-    Key? key,
+  const SpatialRenderer({
+    super.key,
     required this.child,
     this.lightColor = const Color(0xFFFFFFFF),
     this.lightIntensity = 4.0,
@@ -52,7 +52,7 @@ class SpatialRenderer extends StatefulWidget {
     this.backgroundMetallic = 0.0,
     this.backgroundReflectance = 0.5,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() => _SpatialRendererState();
@@ -68,7 +68,7 @@ class Vector3 {
 
 class _SpatialRendererState extends State<SpatialRenderer> {
   final SpatialRendererProvider _provider = SpatialRendererProvider();
-  FragmentShader? _shader = null;
+  FragmentShader? _shader;
 
   static const int _maxShapes = 8;
 

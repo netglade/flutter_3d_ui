@@ -12,7 +12,7 @@ class ScrollDemo extends HookWidget {
 
     return Column(
       children: [
-        Container(
+        SizedBox(
           height: 650,
           child: SpatialRenderer(
             enabled: enabled.value,
@@ -24,19 +24,19 @@ class ScrollDemo extends HookWidget {
                   child: ListView(
                     children: [
                       const SizedBox(height: 70),
-                      _CardItem(
+                      _cardItem(
                         context,
                         Icons.flight_takeoff,
                         'Premium Business Class',
                         'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
                       ),
-                      _CardItem(
+                      _cardItem(
                         context,
                         Icons.card_travel,
                         'Summer Vacation Deals',
                         'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
                       ),
-                      _CardItem(
+                      _cardItem(
                         context,
                         Icons.workspace_premium,
                         'Elite Status Benefits',
@@ -57,7 +57,7 @@ class ScrollDemo extends HookWidget {
                     elevation: 400,
                     color: Colors.blueGrey,
                     sideColor: Colors.blueGrey,
-                    child: Container(
+                    child: SizedBox(
                       height: 120,
                       width: double.infinity,
                     ),
@@ -74,7 +74,7 @@ class ScrollDemo extends HookWidget {
                     elevation: 400,
                     color: Colors.blueGrey,
                     sideColor: Colors.blueGrey,
-                    child: Container(
+                    child: SizedBox(
                       height: 120,
                       width: double.infinity,
                     ),
@@ -99,7 +99,7 @@ class ScrollDemo extends HookWidget {
     );
   }
 
-  Widget _CardItem(
+  Widget _cardItem(
       BuildContext context, IconData icon, String title, String subtitle) {
     return Padding(
       padding: const EdgeInsets.all(50.0),

@@ -32,7 +32,7 @@ class SpatialContainer extends StatefulWidget {
   /// raised from the background.
   const SpatialContainer({
     required this.child,
-    Key? key,
+    super.key,
     this.elevation = 8.0,
     this.sideRadius = 0.0,
     this.topRadius = 0.0,
@@ -41,7 +41,7 @@ class SpatialContainer extends StatefulWidget {
     this.metallic = 0.0,
     this.roughness = 1.0,
     this.reflectance = 0.5,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() => SpatialContainerState();
