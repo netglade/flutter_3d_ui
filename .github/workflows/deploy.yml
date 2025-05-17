@@ -51,10 +51,10 @@ jobs:
       #   run: flutter build web --base-href "/glade_forms/"
 
       - name: Get dependencies
-        run: fvm flutter pub get
+        run: flutter pub get
 
       - name: Build Flutter web
-        run: fvm flutter build web --release --base-href /flutter_3d_ui/
+        run: flutter build web --release --base-href /flutter_3d_ui/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
