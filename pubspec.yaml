@@ -20,7 +20,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter_native_splash:
-  color: "ffffff"
+  color: "AFC1D0"
   image: assets/images/wordart_title.png
   web: true
   web_image_mode: center
