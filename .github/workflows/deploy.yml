@@ -33,8 +33,6 @@ jobs:
 
       - name: Configure FVM
         uses: kuhnroyal/flutter-fvm-config-action@v1
-        with:
-          path: ".fvm/fvm_config.json"
 
       # - name: Install Flutter
       #   uses: subosito/flutter-action@v2
