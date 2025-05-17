@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:balatro_flutter/3d_ui/spatial_renderer_provider.dart';
+import 'package:flutter_3d_ui/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:provider/provider.dart';

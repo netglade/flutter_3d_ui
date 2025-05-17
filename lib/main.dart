@@ -1,6 +1,6 @@
-import 'package:balatro_flutter/button_demo.dart';
-import 'package:balatro_flutter/components/responsive_wrapper.dart';
-import 'package:balatro_flutter/scroll_demo.dart';
+import 'package:flutter_3d_ui/button_demo.dart';
+import 'package:flutter_3d_ui/components/responsive_wrapper.dart';
+import 'package:flutter_3d_ui/scroll_demo.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: '3D UI in Flutter',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:balatro_flutter/content.dart';
-import 'package:balatro_flutter/shape_data.dart';
+import 'package:flutter_3d_ui/content.dart';
+import 'package:flutter_3d_ui/shape_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 

@@ -1,4 +1,4 @@
-# balatro_flutter
+# flutter_3d_ui
 
 A new Flutter project.
 

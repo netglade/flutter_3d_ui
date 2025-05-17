@@ -6,18 +6,18 @@
     "configurations": [
     
         {
-            "name": "balatro_flutter",
+            "name": "flutter_3d_ui",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "balatro_flutter (profile mode)",
+            "name": "flutter_3d_ui (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "balatro_flutter (release mode)",
+            "name": "flutter_3d_ui (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
