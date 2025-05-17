@@ -72,11 +72,6 @@ class _SpatialRendererState extends State<SpatialRenderer> {
       return;
     }
 
-    if (!firstFrameRendered) {
-      firstFrameRendered = true;
-      return;
-    }
-
     final currentOffset = (context.findRenderObject() as RenderBox?)
             ?.localToGlobal(Offset.zero) ??
         Offset.zero;
@@ -177,10 +172,9 @@ class _SpatialRendererState extends State<SpatialRenderer> {
           if (_shader == null) {
             return Center(
                 child: Text(
-              'Loading...',
+              'Loading 3D view...',
               style: TextStyle(
                 fontSize: 32,
-                fontWeight: FontWeight.bold,
               ),
             ));
           }
@@ -205,11 +199,10 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                       // Draw loading text
                       final textPainter = TextPainter(
                         text: const TextSpan(
-                          text: 'Loading...',
+                          text: 'Loading 3D view...',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 32,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         textDirection: TextDirection.ltr,
@@ -224,8 +217,8 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                       );
                       return;
                     }
-
                     _shader!.setImageSampler(0, image);
+
                     _setShaderUniforms();
 
                     final paint = Paint()..shader = _shader!;

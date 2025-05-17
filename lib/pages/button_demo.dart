@@ -44,8 +44,8 @@ class ButtonDemo extends HookWidget {
             backgroundColor: Colors.grey,
             child: Center(
               child: SizedBox(
-                width: 205,
-                height: 205,
+                width: 206,
+                height: 206,
                 child: GestureDetector(
                   onTapDown: (_) => handlePress(),
                   child: SpatialContainer(
