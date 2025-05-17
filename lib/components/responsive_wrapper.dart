@@ -23,39 +23,53 @@ class ResponsiveWrapper extends StatelessWidget {
       return child;
     }
 
-    return SingleChildScrollView(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(-0.2, 0.0),
+          radius: 1.5,
+          colors: [
+            Color.fromARGB(255, 212, 221, 227),
+            Color.fromARGB(255, 99, 134, 169),
+          ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/wordart_title.png',
-              scale: 1.25,
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 25.0),
-              child: Container(
-                width: mobileWidth,
-                height: mobileHeight,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.black,
-                    width: 8,
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: child,
+      ),
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 550,
+                child: Image.asset(
+                  'assets/images/wordart_title.png',
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0, vertical: 25.0),
+                child: Container(
+                  width: mobileWidth,
+                  height: mobileHeight,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 8,
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: child,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

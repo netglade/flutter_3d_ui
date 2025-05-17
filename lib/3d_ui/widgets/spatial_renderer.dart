@@ -75,8 +75,15 @@ class _SpatialRendererState extends State<SpatialRenderer> {
 
   static const int _maxShapes = 8;
 
+  bool firstFrameRendered = false;
+
   void _setShaderUniforms() {
     if (_shader == null) {
+      return;
+    }
+
+    if (!firstFrameRendered) {
+      firstFrameRendered = true;
       return;
     }
 
@@ -180,7 +187,14 @@ class _SpatialRendererState extends State<SpatialRenderer> {
         future: _loadShader(),
         builder: (context, snapshot) {
           if (_shader == null) {
-            return const CircularProgressIndicator();
+            return Center(
+                child: Text(
+              'Loading...',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ));
           }
 
           return ChangeNotifierProvider.value(
@@ -192,6 +206,16 @@ class _SpatialRendererState extends State<SpatialRenderer> {
                 return AnimatedSampler(
                   enabled: widget.enabled,
                   (image, size, canvas) {
+                    if (!firstFrameRendered) {
+                      firstFrameRendered = true;
+                      final paint = Paint()..color = Colors.white;
+                      canvas.drawRect(
+                        Rect.fromLTWH(0, 0, size.width, size.height),
+                        paint,
+                      );
+                      return;
+                    }
+
                     _shader!.setImageSampler(0, image);
                     _setShaderUniforms();
 
