@@ -149,6 +149,21 @@ vec3 sRGBToLinear(vec3 color) {
     return pow(color, vec3(2.2));
 }
 
+vec3 calculateAlbedo(vec3 p, vec3 normal, Shape shape) {
+    if (shape.size.x <= EPSILON) {
+        return linearBackgroundColor;
+    } else if (normal.z < EPSILON) {
+        return shape.sideColor;
+    } else {
+        return sRGBToLinear(texture(uTexture, vec2(p.x / resolution.x, p.y / resolution.y)).rgb);
+    }
+}
+
+vec3 calculateF0(vec3 albedo, Shape shape) {
+    vec3 F0 = vec3(0.16 * shape.reflectance * shape.reflectance);
+    return mix(F0, albedo, shape.metallic);
+}
+
 /**
  * Calculates the intersection of a ray with a torus (https://iquilezles.org/articles/intersectors/)
  * 
@@ -702,17 +717,8 @@ vec3 calcPBR(vec3 p, vec3 normal, vec3 shiftNormal, vec3 viewDir, vec3 normalize
 
     vec2 textureUv = vec2(p.x, p.y) / resolution;
 
-    vec3 albedo = linearBackgroundColor;
-    if (textureUv.x < EPSILON || textureUv.x > 1.0 - EPSILON || textureUv.y < EPSILON || textureUv.y > 1.0 - EPSILON)
-        albedo = linearBackgroundColor;
-    else if (normal.z < EPSILON && shape.size.x > EPSILON)
-        albedo = shape.sideColor;
-    else
-        albedo = sRGBToLinear(texture(uTexture, vec2(textureUv.x, textureUv.y)).rgb);
-
-    // Calculate base F0 using reflectance
-    vec3 F0 = vec3(0.16 * shape.reflectance * shape.reflectance);
-    F0 = mix(F0, albedo, shape.metallic);
+    vec3 albedo = calculateAlbedo(p, normal, shape);
+    vec3 F0 = calculateF0(albedo, shape);
 
     // Calculate actual roughness (roughness squared)
     float actualRoughness = shape.roughness * shape.roughness;
@@ -850,12 +856,10 @@ void main() {
         vec3 color = calcPBR(p, normal, shiftNormal, viewDir, normalizedLightDir, finalShape);
         
         // Calculate base F0 for reflection
-        vec3 albedo = finalShape.size.x <= EPSILON ? linearBackgroundColor : 
-                     (normal.z < EPSILON ? finalShape.sideColor : 
-                     sRGBToLinear(texture(uTexture, vec2(p.x / resolution.x,  p.y / resolution.y)).rgb));
-        vec3 F0 = vec3(0.16 * finalShape.reflectance * finalShape.reflectance);
-        F0 = mix(F0, albedo, finalShape.metallic);
+        vec3 albedo = calculateAlbedo(p, normal, finalShape);
+        vec3 F0 = calculateF0(albedo, finalShape);
         
+        // Add reflection contribution
         color += calculateReflection(p, normal, viewDir, F0, finalShape.roughness);
         
         // Tonemapping is not being applied as it is harder with it to obtain very bright colors while keeping other colors not bright

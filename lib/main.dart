@@ -1,6 +1,6 @@
-import 'package:flutter_3d_ui/button_demo.dart';
-import 'package:flutter_3d_ui/components/responsive_wrapper.dart';
-import 'package:flutter_3d_ui/scroll_demo.dart';
+import 'package:flutter_3d_ui/pages/button_demo.dart';
+import 'package:flutter_3d_ui/widgets/responsive_wrapper.dart';
+import 'package:flutter_3d_ui/pages/scroll_demo.dart';
 import 'package:flutter/material.dart';
 
 void main() {

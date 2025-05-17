@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_3d_ui/3d_ui/models/vector3.dart';
 import 'package:flutter_3d_ui/3d_ui/spatial_renderer_provider.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,7 @@ class SpatialRenderer extends StatefulWidget {
   final double backgroundReflectance;
   final bool enabled;
 
-  /// Creates a 3D renderer for the given [child] widget.
+  /// Creates a 3D renderer for the given [child] widget. Material paramters correspond to https://google.github.io/filament/Material%20Properties.pdf.
   ///
   /// The renderer uses ray tracing to create realistic lighting and shadows.
   /// The scene is viewed from an orthographic camera positioned above the scene.
@@ -56,14 +57,6 @@ class SpatialRenderer extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _SpatialRendererState();
-}
-
-class Vector3 {
-  final double x;
-  final double y;
-  final double z;
-
-  const Vector3(this.x, this.y, this.z);
 }
 
 class _SpatialRendererState extends State<SpatialRenderer> {
