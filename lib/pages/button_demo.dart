@@ -18,11 +18,11 @@ class ButtonDemo extends HookWidget {
     // Create animation controller for elevation
     final animationController = useAnimationController(
       duration: const Duration(milliseconds: 500),
-      initialValue: 400.0,
+      initialValue: 340.0,
     );
 
     final elevationAnimation = useAnimation(
-        Tween<double>(begin: 200.0, end: 400.0).animate(CurvedAnimation(
+        Tween<double>(begin: 200.0, end: 340.0).animate(CurvedAnimation(
       parent: animationController,
       curve: Curves.easeInOut,
     )));
@@ -30,7 +30,7 @@ class ButtonDemo extends HookWidget {
     void handlePress() {
       // Immediately jump to 200 by setting controller to beginning value
       animationController.value = 0.0;
-      // Then animate from 200 back to 400
+      // Then animate from 200 back to 340
       animationController.forward();
     }
 
@@ -44,8 +44,8 @@ class ButtonDemo extends HookWidget {
             backgroundColor: Colors.grey,
             child: Center(
               child: SizedBox(
-                width: 206,
-                height: 206,
+                width: 207,
+                height: 207,
                 child: GestureDetector(
                   onTapDown: (_) => handlePress(),
                   child: SpatialContainer(
