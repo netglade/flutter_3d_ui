@@ -1,6 +1,6 @@
 # 3D UI in Flutter
 
-<p align='center'><b>An experimental project that turns Flutter UI 3D using fragment shaders and ray tracing.</b></p>
+<p align='center'><b>An experimental project that turns Flutter UI into 3D using fragment shaders and ray tracing</b></p>
 
 
 <p align='center'>
@@ -44,14 +44,14 @@ SpatialContainer(
 
 ```
 
-In addition to the above mentioned properties, the project simulates shadows and reflections in real time. Limitations of the current implementation, that cannot be seen in the demo, are discussed in this [blog post (todo: url)](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
+In addition to the above mentioned properties, the project simulates shadows and reflections in real time. Limitations of the current implementation, that cannot be seen in a [provided demo](https://netglade.github.io/flutter_3d_ui), are discussed in this [blog post (todo: url)](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
 
-With further development, this project could evolve into a fully-featured library.
+With further development, this project could evolve into a fully-featured library 🙏🤞.
 
 
 ## How It Works
 
-Our implementation uses ray tracing and physically based rendering in Flutter's fragment shader. The shader receives the `SpatialContainer`s' positions, dimensions, and parameters to create realistic 3D effects, as well as the underlying UI as a texture. More detailed technical description is in the [blog post](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
+Our implementation uses ray tracing and physically based rendering in Flutter's fragment shader. The shader receives the positions, dimensions, and parameters of all `SpatialContainer`s, as well as the underlying UI as a texture, to create realistic 3D effects. More detailed technical description is in the [blog post](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
 
 
 ## Local Setup
