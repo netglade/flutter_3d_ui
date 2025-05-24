@@ -61,8 +61,8 @@ class _AppInnerState extends State<AppInner> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    ButtonDemo(),
     ScrollDemo(),
+    ButtonDemo(),
   ];
 
   void _onItemTapped(int index) {
@@ -94,12 +94,12 @@ class _AppInnerState extends State<AppInner> {
                 bottomNavigationBar: BottomNavigationBar(
                   items: const <BottomNavigationBarItem>[
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.touch_app),
-                      label: 'Button Demo',
-                    ),
-                    BottomNavigationBarItem(
                       icon: Icon(Icons.view_list),
                       label: 'Scroll Demo',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.touch_app),
+                      label: 'Button Demo',
                     ),
                   ],
                   currentIndex: _selectedIndex,

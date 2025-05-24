@@ -1,4 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
+
+import 'package:flutter/material.dart' hide Colors;
+import 'package:flutter_3d_ui/3d_ui/models/vector3.dart';
 import 'package:flutter_3d_ui/3d_ui/widgets/spatial_container.dart';
 import 'package:flutter_3d_ui/3d_ui/widgets/spatial_renderer.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -11,29 +14,44 @@ class ScrollDemo extends HookWidget {
     final enabled = useState(true);
     final scrollController = useScrollController();
     final scrollPosition = useState(0.0);
+    final lightDirection = useState(0.0);
+
+    final lightDirection1 = Vector3(0.2, 0.2, -1.0); // Right
+    final lightDirection2 = Vector3(0.2, -0.07, -1.0); // Left
+
+    final interpolatedDirection = Vector3(
+      lightDirection1.x +
+          (lightDirection2.x - lightDirection1.x) * lightDirection.value,
+      lightDirection1.y +
+          (lightDirection2.y - lightDirection1.y) * lightDirection.value,
+      lightDirection1.z +
+          (lightDirection2.z - lightDirection1.z) * lightDirection.value,
+    );
 
     return Column(
       children: [
         SizedBox(
-          height: 570,
+          height: 490,
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
-            backgroundColor: Colors.grey,
+            backgroundColor: const Color(0xFF9E9E9E),
+            lightDirection: interpolatedDirection,
             child: Stack(
               children: [
                 Center(
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification is ScrollUpdateNotification) {
-                        scrollPosition.value = notification.metrics.pixels;
+                        scrollPosition.value =
+                            min(notification.metrics.pixels, 675);
                       }
                       return false;
                     },
                     child: ListView(
                       controller: scrollController,
                       children: [
-                        const SizedBox(height: 80),
+                        const SizedBox(height: 55),
                         _cardItem(
                           context,
                           Icons.window_rounded,
@@ -66,8 +84,8 @@ class ScrollDemo extends HookWidget {
                     sideRadius: 0,
                     topRadius: 0,
                     elevation: 900,
-                    color: Colors.grey,
-                    sideColor: Colors.black,
+                    color: const Color(0xFF9E9E9E),
+                    sideColor: const Color(0xFF000000),
                     child: SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -83,8 +101,8 @@ class ScrollDemo extends HookWidget {
                     sideRadius: 0,
                     topRadius: 0,
                     elevation: 900,
-                    color: Colors.grey,
-                    sideColor: const Color.fromARGB(255, 122, 122, 122),
+                    color: const Color(0xFF9E9E9E),
+                    sideColor: const Color(0xFF7A7A7A),
                     child: SizedBox(
                       height: 130,
                       width: double.infinity,
@@ -119,11 +137,24 @@ class ScrollDemo extends HookWidget {
               Slider(
                 value: scrollPosition.value,
                 min: 0.0,
-                max: 650,
+                max: 675,
                 label: scrollPosition.value.toStringAsFixed(0),
                 onChanged: (value) {
                   scrollController.jumpTo(value);
                   scrollPosition.value = value;
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Light Direction',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Slider(
+                value: lightDirection.value,
+                min: 0.0,
+                max: 1.0,
+                onChanged: (value) {
+                  lightDirection.value = value;
                 },
               ),
             ],
@@ -145,8 +176,8 @@ class ScrollDemo extends HookWidget {
           sideRadius: 70,
           topRadius: 15,
           elevation: 200,
-          color: Colors.white,
-          sideColor: Colors.white,
+          color: const Color(0xFFFFFFFF),
+          sideColor: const Color(0xFFFFFFFF),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -162,11 +193,11 @@ class ScrollDemo extends HookWidget {
                         sideRadius: 45,
                         topRadius: 10,
                         elevation: 300,
-                        color: Colors.blue,
-                        sideColor: Colors.blue,
+                        color: const Color(0xFF2196F3),
+                        sideColor: const Color(0xFF2196F3),
                         child: Icon(
                           icon,
-                          color: Colors.white,
+                          color: const Color(0xFFFFFFFF),
                           size: 40,
                         ),
                       ),
@@ -178,7 +209,7 @@ class ScrollDemo extends HookWidget {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: Color(0xFF000000),
                           letterSpacing: -0.5,
                         ),
                       ),
