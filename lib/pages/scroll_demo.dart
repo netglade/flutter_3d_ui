@@ -52,23 +52,29 @@ class ScrollDemo extends HookWidget {
                       controller: scrollController,
                       children: [
                         const SizedBox(height: 55),
-                        _cardItem(
-                          context,
-                          Icons.window_rounded,
-                          'Reflection',
-                          'In the bottom the cards are emerging from a reflective surface, creating a realistic reflection effect. The reflection is dynamically updated based on the card\'s position and orientation.',
+                        _CardItem(
+                          key: const ValueKey('reflection'),
+                          context: context,
+                          icon: Icons.window_rounded,
+                          title: 'Reflection',
+                          subtitle:
+                              'In the bottom the cards are emerging from a reflective surface, creating a realistic reflection effect. The reflection is dynamically updated based on the card\'s position and orientation.',
                         ),
-                        _cardItem(
-                          context,
-                          Icons.light_mode,
-                          'Directional Shadows',
-                          'Shadows dynamically respond to the viewing angle, creating a sense of depth and dimension. The shadow direction and intensity change as you interact with the interface.',
+                        _CardItem(
+                          key: const ValueKey('shadows'),
+                          context: context,
+                          icon: Icons.light_mode,
+                          title: 'Directional Shadows',
+                          subtitle:
+                              'Shadows dynamically respond to the viewing angle, creating a sense of depth and dimension. The shadow direction and intensity change as you interact with the interface.',
                         ),
-                        _cardItem(
-                          context,
-                          Icons.texture,
-                          'Material Properties',
-                          'Each surface has unique material properties like roughness and reflectivity. These properties determine how light interacts with the surface, creating realistic material effects.',
+                        _CardItem(
+                          key: const ValueKey('material'),
+                          context: context,
+                          icon: Icons.texture,
+                          title: 'Material Properties',
+                          subtitle:
+                              'Each surface has unique material properties like roughness and reflectivity. These properties determine how light interacts with the surface, creating realistic material effects.',
                         ),
                         const SizedBox(height: 150),
                       ],
@@ -163,9 +169,24 @@ class ScrollDemo extends HookWidget {
       ],
     );
   }
+}
 
-  Widget _cardItem(
-      BuildContext context, IconData icon, String title, String subtitle) {
+class _CardItem extends StatelessWidget {
+  final BuildContext context;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _CardItem({
+    super.key,
+    required this.context,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
       child: SizedBox(
