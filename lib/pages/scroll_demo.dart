@@ -10,6 +10,8 @@ class ScrollDemo extends HookWidget {
   Widget build(BuildContext context) {
     final enabled = useState(true);
 
+    var backgroundColor = Colors.white30;
+
     return Column(
       children: [
         SizedBox(
@@ -17,13 +19,13 @@ class ScrollDemo extends HookWidget {
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
-            backgroundColor: Colors.blueGrey,
+            backgroundColor: Colors.grey,
             child: Stack(
               children: [
                 Center(
                   child: ListView(
                     children: [
-                      const SizedBox(height: 70),
+                      const SizedBox(height: 100),
                       _cardItem(
                         context,
                         Icons.flight_takeoff,
@@ -40,7 +42,7 @@ class ScrollDemo extends HookWidget {
                         context,
                         Icons.workspace_premium,
                         'Elite Status Benefits',
-                        'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide. Start earning points today!',
+                        'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide.',
                       ),
                       const SizedBox(height: 70),
                     ],
@@ -48,17 +50,17 @@ class ScrollDemo extends HookWidget {
                 ),
                 Positioned(
                   top: -50,
-                  left: -50,
+                  left: -100,
                   right: -50,
                   child: SpatialContainer(
                     roughness: 0.4,
                     sideRadius: 0,
                     topRadius: 0,
-                    elevation: 400,
-                    color: Colors.blueGrey,
-                    sideColor: Colors.blueGrey,
+                    elevation: 900,
+                    color: Colors.grey,
+                    sideColor: Colors.black,
                     child: SizedBox(
-                      height: 120,
+                      height: 60,
                       width: double.infinity,
                     ),
                   ),
@@ -71,9 +73,9 @@ class ScrollDemo extends HookWidget {
                     roughness: 0.4,
                     sideRadius: 0,
                     topRadius: 0,
-                    elevation: 400,
-                    color: Colors.blueGrey,
-                    sideColor: Colors.blueGrey,
+                    elevation: 900,
+                    color: Colors.grey,
+                    sideColor: const Color.fromARGB(255, 122, 122, 122),
                     child: SizedBox(
                       height: 120,
                       width: double.infinity,
@@ -102,14 +104,14 @@ class ScrollDemo extends HookWidget {
   Widget _cardItem(
       BuildContext context, IconData icon, String title, String subtitle) {
     return Padding(
-      padding: const EdgeInsets.all(50.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
       child: SizedBox(
         width: 300,
         height: 300,
         child: SpatialContainer(
-          roughness: 0.4,
-          sideRadius: 40,
-          topRadius: 0,
+          roughness: 0.1,
+          sideRadius: 70,
+          topRadius: 15,
           elevation: 200,
           color: Colors.white,
           sideColor: Colors.white,
@@ -124,12 +126,12 @@ class ScrollDemo extends HookWidget {
                       width: 100,
                       height: 100,
                       child: SpatialContainer(
-                        roughness: 0.4,
-                        sideRadius: 50,
-                        topRadius: 20,
+                        roughness: 0.45,
+                        sideRadius: 45,
+                        topRadius: 10,
                         elevation: 300,
-                        color: const Color(0xFF1E88E5),
-                        sideColor: const Color(0xFF1565C0),
+                        color: Colors.blue,
+                        sideColor: Colors.blue,
                         child: Icon(
                           icon,
                           color: Colors.white,
@@ -144,7 +146,7 @@ class ScrollDemo extends HookWidget {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A237E),
+                          color: Colors.black,
                           letterSpacing: -0.5,
                         ),
                       ),
