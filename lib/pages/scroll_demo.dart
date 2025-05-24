@@ -76,7 +76,7 @@ class ScrollDemo extends HookWidget {
                           subtitle:
                               'Each surface has unique material properties like roughness and reflectivity. These properties determine how light interacts with the surface, creating realistic material effects.',
                         ),
-                        const SizedBox(height: 150),
+                        const SizedBox(height: 70),
                       ],
                     ),
                   ),
@@ -188,7 +188,7 @@ class _CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 40.0),
       child: SizedBox(
         width: 300,
         height: 300,
