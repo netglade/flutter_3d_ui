@@ -44,7 +44,7 @@ class ScrollDemo extends HookWidget {
                     onNotification: (notification) {
                       if (notification is ScrollUpdateNotification) {
                         scrollPosition.value =
-                            min(notification.metrics.pixels, 675);
+                            min(notification.metrics.pixels, 650);
                       }
                       return false;
                     },
@@ -70,7 +70,7 @@ class ScrollDemo extends HookWidget {
                           'Material Properties',
                           'Each surface has unique material properties like roughness and reflectivity. These properties determine how light interacts with the surface, creating realistic material effects.',
                         ),
-                        const SizedBox(height: 90),
+                        const SizedBox(height: 150),
                       ],
                     ),
                   ),
@@ -137,7 +137,7 @@ class ScrollDemo extends HookWidget {
               Slider(
                 value: scrollPosition.value,
                 min: 0.0,
-                max: 675,
+                max: 650,
                 label: scrollPosition.value.toStringAsFixed(0),
                 onChanged: (value) {
                   scrollController.jumpTo(value);
