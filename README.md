@@ -51,7 +51,7 @@ With further development, this project could evolve into a fully-featured librar
 
 ## How It Works
 
-Our implementation uses ray tracing and physically based rendering in Flutter's fragment shader. The shader receives the positions, dimensions, and parameters of all `SpatialContainer`s, as well as the underlying UI as a texture, to create realistic 3D effects. More detailed technical description is in the [blog post](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
+Our implementation uses ray tracing and physically based rendering in Flutter's fragment shader. The shader receives the positions, dimensions, and parameters of all `SpatialContainers`, as well as the underlying UI as a texture, to create realistic 3D effects. More detailed technical description is in the [blog post](https://www.netglade.cz/en/blog/bringing-mcps-to-the-cloud-how-we-won-the-e2b-hackathon).
 
 
 ## Local Setup
