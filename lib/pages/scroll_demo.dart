@@ -9,13 +9,13 @@ class ScrollDemo extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = useState(true);
-
-    var backgroundColor = Colors.white30;
+    final scrollController = useScrollController();
+    final scrollPosition = useState(0.0);
 
     return Column(
       children: [
         SizedBox(
-          height: 650,
+          height: 570,
           child: SpatialRenderer(
             enabled: enabled.value,
             backgroundRoughness: 0.6,
@@ -23,29 +23,38 @@ class ScrollDemo extends HookWidget {
             child: Stack(
               children: [
                 Center(
-                  child: ListView(
-                    children: [
-                      const SizedBox(height: 100),
-                      _cardItem(
-                        context,
-                        Icons.flight_takeoff,
-                        'Premium Business Class',
-                        'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
-                      ),
-                      _cardItem(
-                        context,
-                        Icons.card_travel,
-                        'Summer Vacation Deals',
-                        'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
-                      ),
-                      _cardItem(
-                        context,
-                        Icons.workspace_premium,
-                        'Elite Status Benefits',
-                        'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide.',
-                      ),
-                      const SizedBox(height: 70),
-                    ],
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) {
+                      if (notification is ScrollUpdateNotification) {
+                        scrollPosition.value = notification.metrics.pixels;
+                      }
+                      return false;
+                    },
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        const SizedBox(height: 80),
+                        _cardItem(
+                          context,
+                          Icons.flight_takeoff,
+                          'Premium Business Class',
+                          'Experience luxury at 35,000 feet with our newly upgraded business class. Enjoy lie-flat seats, gourmet dining, and exclusive lounge access. Perfect for your next business trip.',
+                        ),
+                        _cardItem(
+                          context,
+                          Icons.card_travel,
+                          'Summer Vacation Deals',
+                          'Book your summer getaway now and save up to 40% on selected routes. Our special summer packages include free checked baggage and priority boarding.',
+                        ),
+                        _cardItem(
+                          context,
+                          Icons.workspace_premium,
+                          'Elite Status Benefits',
+                          'Unlock exclusive privileges with our Elite Status program. Enjoy priority check-in, extra baggage allowance, and access to premium lounges worldwide.',
+                        ),
+                        const SizedBox(height: 90),
+                      ],
+                    ),
                   ),
                 ),
                 Positioned(
@@ -60,7 +69,7 @@ class ScrollDemo extends HookWidget {
                     color: Colors.grey,
                     sideColor: Colors.black,
                     child: SizedBox(
-                      height: 60,
+                      height: 50,
                       width: double.infinity,
                     ),
                   ),
@@ -77,7 +86,7 @@ class ScrollDemo extends HookWidget {
                     color: Colors.grey,
                     sideColor: const Color.fromARGB(255, 122, 122, 122),
                     child: SizedBox(
-                      height: 120,
+                      height: 130,
                       width: double.infinity,
                     ),
                   ),
@@ -96,6 +105,29 @@ class ScrollDemo extends HookWidget {
           onChanged: (value) {
             enabled.value = value;
           },
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Scroll Position: ${scrollPosition.value.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Slider(
+                value: scrollPosition.value,
+                min: 0.0,
+                max: 650,
+                label: scrollPosition.value.toStringAsFixed(0),
+                onChanged: (value) {
+                  scrollController.jumpTo(value);
+                  scrollPosition.value = value;
+                },
+              ),
+            ],
+          ),
         ),
       ],
     );
