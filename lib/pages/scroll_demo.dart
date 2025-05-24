@@ -44,7 +44,7 @@ class ScrollDemo extends HookWidget {
                     onNotification: (notification) {
                       if (notification is ScrollUpdateNotification) {
                         scrollPosition.value =
-                            min(notification.metrics.pixels, 650);
+                            min(notification.metrics.pixels, 630);
                       }
                       return false;
                     },
@@ -85,7 +85,7 @@ class ScrollDemo extends HookWidget {
                     topRadius: 0,
                     elevation: 900,
                     color: const Color(0xFF9E9E9E),
-                    sideColor: const Color(0xFF000000),
+                    sideColor: const Color.fromARGB(255, 70, 70, 70),
                     child: SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -137,7 +137,7 @@ class ScrollDemo extends HookWidget {
               Slider(
                 value: scrollPosition.value,
                 min: 0.0,
-                max: 650,
+                max: 630,
                 label: scrollPosition.value.toStringAsFixed(0),
                 onChanged: (value) {
                   scrollController.jumpTo(value);
