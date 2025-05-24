@@ -44,7 +44,7 @@ class ScrollDemo extends HookWidget {
                     onNotification: (notification) {
                       if (notification is ScrollUpdateNotification) {
                         scrollPosition.value =
-                            min(notification.metrics.pixels, 630);
+                            min(notification.metrics.pixels, 632);
                       }
                       return false;
                     },
@@ -143,7 +143,7 @@ class ScrollDemo extends HookWidget {
               Slider(
                 value: scrollPosition.value,
                 min: 0.0,
-                max: 630,
+                max: 632,
                 label: scrollPosition.value.toStringAsFixed(0),
                 onChanged: (value) {
                   scrollController.jumpTo(value);
