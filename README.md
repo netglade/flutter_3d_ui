@@ -63,7 +63,3 @@ fvm install
 fvm flutter pub get
 fvm flutter run
 ```
-
-## License
-
-[MIT](LICENSE)
