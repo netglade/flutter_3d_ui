@@ -51,7 +51,7 @@ class ScrollDemo extends HookWidget {
                     child: ListView(
                       controller: scrollController,
                       children: [
-                        const SizedBox(height: 55),
+                        const SizedBox(height: 59),
                         _CardItem(
                           key: const ValueKey('reflection'),
                           context: context,
@@ -132,7 +132,7 @@ class ScrollDemo extends HookWidget {
         ),
         const SizedBox(height: 10),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 15.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
